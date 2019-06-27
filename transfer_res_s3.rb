@@ -1,13 +1,17 @@
+#!/usr/bin/env ruby
+require 'securerandom'
 require 'aws-sdk-s3'  # v2: require 'aws-sdk'
 region = 'us-east-1'
 
-s3 = Aws::S3::Resource.new(region: region)
-
-file = File.open('test_out.txt', 'w')
-file.puts "AWS transfer test file.  Did it work?"
+id = SecureRandom.uuid
+outfilename = id.to_s + '.txt'
+file = File.open(outfilename, 'w')
+file.puts "AWS transfer test file.  Did it work? " + outfilename
 file.close
 
-save_file = './test_out.txt'
+s3 = Aws::S3::Resource.new(region: region)
+
+save_file = './' + outfilename
 bucket = 'btapresultsbucket'
 name = File.basename(save_file)
 
