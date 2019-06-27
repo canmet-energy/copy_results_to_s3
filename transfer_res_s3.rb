@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+
 require 'securerandom'
 require 'aws-sdk-s3'
 region = 'us-east-1'
