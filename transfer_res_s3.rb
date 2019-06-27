@@ -1,25 +1,19 @@
-#!/usr/bin/env sh
+require 'aws-sdk-s3'  # v2: require 'aws-sdk'
+region = 'us-east-1'
 
-# Switch to directory the script resides in
-SCRIPT=$(readlink -f "$0")
-SCRIPTPATH=$(dirname "$SCRIPT")
-cd $SCRIPTPATH
+s3 = Aws::S3::Resource.new(region: region)
 
-# move to the top level analysis directory
-cd ..
-cd ..
+file = File.open('test_out.txt', 'w')
+file.puts "AWS transfer test file.  Did it work?"
+file.close
 
-# if the lib directory does not exist, error
-if ! [ -d "lib" ]; then
-  echo "ERROR: lib file not uploaded."
-  exit 1
-fi
+save_file = './test_out.txt'
+bucket = 'btapresultsbucket'
+name = File.basename(save_file)
 
-# if the example.rb file does not exist, error, otherwise execute it
-if [ -f "lib/example.rb" ]; then
-  echo "Executing the example.rb file."
-  ruby lib/example.rb
-else
-  echo "ERROR: lib/example.rb not uploaded."
-  exit 1
-fi
+obj = s3.bucket(bucket).object(name)
+obj.upload_file(save_file)
+
+s3.buckets.limit(50).each do |b|
+  puts "#{b.name}"
+end
