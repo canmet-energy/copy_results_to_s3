@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 require 'securerandom'
-require 'aws-sdk-s3'  # v2: require 'aws-sdk'
+require 'aws-sdk-s3'
 region = 'us-east-1'
 
 id = SecureRandom.uuid
