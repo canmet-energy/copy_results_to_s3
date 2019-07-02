@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+
 require 'bundler'
 require 'securerandom'
 require '/var/oscli/gems/ruby/2.2.0/gems/aws-sdk-s3'
