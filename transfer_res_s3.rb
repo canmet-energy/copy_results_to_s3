@@ -2,7 +2,7 @@
 
 require 'bundler'
 require 'securerandom'
-require '/var/oscli/gems/ruby/2.2.0/gems/aws-sdk-s3-1.44.0'
+require 'aws-sdk-s3'
 region = 'us-east-1'
 
 id = SecureRandom.uuid
