@@ -2,11 +2,15 @@
 
 puts "Before: #{$LOAD_PATH}"
 curr_dir = Dir.pwd
+puts curr_dir
 gem_loc = curr_dir + '/vendor/bundle/ruby/2.2.0/gems/'
+puts gem_loc
 gem_dirs = Dir.entries(gem_loc).select {|entry| File.directory? File.join(gem_loc,entry) and !(entry =='.' || entry == '..') }
+puts gem_dirs
 gem_dirs.each do |gem_dir|
   lib = gem_dir + '/lib'
   $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+  puts lib
 end
 puts "After: #{$LOAD_PATH}" 
 
