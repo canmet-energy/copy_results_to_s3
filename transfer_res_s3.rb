@@ -1,5 +1,8 @@
 #!/usr/bin/env ruby
 
+lib = '/usr/local/lib/ruby/gems/2.2.0/gems/'
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+
 require 'bundler'
 require 'securerandom'
 require 'aws-sdk'
