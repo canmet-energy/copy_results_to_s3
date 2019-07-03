@@ -1,13 +1,17 @@
 #!/usr/bin/env ruby
 
 puts "Before: #{$LOAD_PATH}"
-lib = '/usr/local/lib/ruby/gems/2.2.0/gems/'
+lib = '/usr/local/lib/ruby/gems/2.2.0/gems/aws-sdk-s3-1.44.0/lib'
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+lib = '/usr/local/lib/ruby/gems/2.2.0/gems//aws-sdk-core-3.58.0/lib'
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+lib = '/usr/local/lib/ruby/gems/2.2.0/gems/aws-sigv4-1.1.0/lib'
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 puts "After: #{$LOAD_PATH}" 
 
 require 'bundler'
 require 'securerandom'
-require 'aws-sdk'
+require 'aws-sdk-s3'
 region = 'us-east-1'
 
 id = SecureRandom.uuid
