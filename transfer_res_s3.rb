@@ -1,7 +1,9 @@
 #!/usr/bin/env ruby
 
+puts "Before: #{$LOAD_PATH}"
 lib = '/usr/local/lib/ruby/gems/2.2.0/gems/'
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+puts "After: #{$LOAD_PATH}" 
 
 require 'bundler'
 require 'securerandom'
@@ -21,7 +23,12 @@ bucket = 'btapresultsbucket'
 name = File.basename(save_file)
 
 obj = s3.bucket(bucket).object(name)
-obj.upload_file(save_file)
+if obj.upload_file(save_file).nil?
+  puts "Upload worked!"
+  puts outfilename
+else
+  puts "Boooooooooooooooooooo!"
+end
 
 s3.buckets.limit(50).each do |b|
   puts "#{b.name}"
