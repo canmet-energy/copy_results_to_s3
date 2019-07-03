@@ -2,7 +2,7 @@
 
 require 'bundler'
 require 'securerandom'
-require 'aws-sdk-s3'
+require 'aws-sdk'
 region = 'us-east-1'
 
 id = SecureRandom.uuid
