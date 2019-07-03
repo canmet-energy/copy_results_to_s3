@@ -8,7 +8,7 @@ puts gem_loc
 gem_dirs = Dir.entries(gem_loc).select {|entry| File.directory? File.join(gem_loc,entry) and !(entry =='.' || entry == '..') }
 puts gem_dirs
 gem_dirs.each do |gem_dir|
-  lib = gem_dir + '/lib'
+  lib = gem_loc + gem_dir + '/lib'
   $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
   puts lib
 end
