@@ -35,9 +35,6 @@ obj = s3.bucket(bucket_name).object(name)
 return_state = obj.upload_file(save_file)
 puts return_state
 
-file_id = "test" + outfilenameb
-save_fileb = './' + outfilenameb
-s3.put_object(bucket: bucket_name, key: file_id, body: outfilenameb)
 s3.buckets.limit(50).each do |b|
   puts "#{b.name}"
 end
