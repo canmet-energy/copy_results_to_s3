@@ -14,28 +14,49 @@ require 'aws-sdk-s3'
 require 'json'
 
 region = 'us-east-1'
-
-ida = SecureRandom.uuid
-idb = SecureRandom.uuid
-outfilenamea = ida.to_s + '.txt'
-file = File.open(outfilenamea, 'w')
-file.puts "AWS transfer test file.  Did it work? " + outfilenamea
-file.close
-
-outfilenameb = idb.to_s + '.txt'
-IO.copy_stream(outfilenamea, outfilenameb)
-
 s3 = Aws::S3::Resource.new(region: region)
-
-save_file = './' + outfilenamea
 bucket_name = 'btapresultsbucket'
-name = File.basename(save_file) + "test"
 
-obj = s3.bucket(bucket_name).object(name)
-return_state = obj.upload_file(save_file)
-puts return_state
-
-s3.buckets.limit(50).each do |b|
-  puts "#{b.name}"
+time_obj = Time.new
+curr_time = time_obj.year.to_s + "-" + time_obj.month.to_s + "-" time_obj.day.to_s + "-" time_obj.hour.to_s + ":" + time_obj.min.to_s ":" + time_obj.sec.to_s + ":" + time_obj.usec.to_s
+curr_dir = Dir.pwd
+main_dir = curr_dir[0..-4]
+res_dirs = Dir.entries(main_dir).select {|entry| File.directory? File.join(main_dir,entry) and !(entry =='.' || entry == '..') }
+out_dir = res_dirs.select { |res_dir| res_dir.match(/data_point_/) }.first
+out_file_loc = main_dir + out_dir + "/"
+out_file = out_file_loc + "out.osw"
+osa_id = ""
+osd_id = ""
+file_id = ""
+if File.file?(out_file)
+  File.open(out_file, "r") do |f|
+    f.each_line do |line|
+      if line.match(/   \"osa_id\" : \"/)
+	    osa_id = line[15..-4]
+	  elsif line.match(/   \"osd_id\" : \"/)
+	    osd_id = line[15..-4] 
+	  end
+    end
+	if osa_id == "" || osd_id == ""
+      file_id = "log_" + curr_time
+	  log_file_loc = "./" + file_id + "txt"
+	  log_file = File.open(log_file_loc, 'w')
+	  log_file.puts "Either could not find osa_id or osd_id in out.osw file."
+	  log_file.close
+	  log_obj = s3.bucket(bucket_name).object("log/" + file_id)
+	  log_obj.upload_file(log_file_loc)
+    else
+      file_id = osa_id + "/" + osd_id + ".osw"
+	  out_obj = s3.bucket(bucket_name).object(file_id)
+	  out_obj.upload_file(out_file)
+    end
+  end
+else
+  file_id = "log_" + curr_time
+  log_file_loc = "./" + file_id + "txt"
+  log_file = File.open(log_file_loc, 'w')
+  log_file.puts "#{out_file} could not be found."
+  log_file.close
+  log_obj = s3.bucket(bucket_name).object("log/" + file_id)
+  Log_obj.upload_file(log_file_loc)
 end
-
