@@ -18,7 +18,7 @@ s3 = Aws::S3::Resource.new(region: region)
 bucket_name = 'btapresultsbucket'
 
 time_obj = Time.new
-curr_time = time_obj.year.to_s + "-" + time_obj.month.to_s + "-" time_obj.day.to_s + "-" time_obj.hour.to_s + ":" + time_obj.min.to_s ":" + time_obj.sec.to_s + ":" + time_obj.usec.to_s
+curr_time = time_obj.year.to_s + "-" + time_obj.month.to_s + "-" + time_obj.day.to_s + "_" + time_obj.hour.to_s + ":" + time_obj.min.to_s + ":" + time_obj.sec.to_s + ":" + time_obj.usec.to_s
 curr_dir = Dir.pwd
 main_dir = curr_dir[0..-4]
 res_dirs = Dir.entries(main_dir).select {|entry| File.directory? File.join(main_dir,entry) and !(entry =='.' || entry == '..') }
