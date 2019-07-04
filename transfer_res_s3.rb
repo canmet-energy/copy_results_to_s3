@@ -14,22 +14,35 @@ require 'aws-sdk-s3'
 
 region = 'us-east-1'
 
-id = SecureRandom.uuid
-outfilename = id.to_s + '.txt'
-file = File.open(outfilename, 'w')
+ida = SecureRandom.uuid
+idb = SecureRandom.uuid
+outfilenamea = ida.to_s + '.txt'
+file = File.open(outfilenamea, 'w')
 file.puts "AWS transfer test file.  Did it work? " + outfilename
 file.close
 
+outfilenameb = idb.to_s + '.txt'
+IO.copy_stream(outfilenamea, outfilenameb)
+
 s3 = Aws::S3::Resource.new(region: region)
 
-save_file = './' + outfilename
-bucket = 'btapresultsbucket'
+save_file = './' + outfilenamea
+bucket_name = 'btapresultsbucket'
 name = File.basename(save_file)
 
-obj = s3.bucket(bucket).object(name)
+obj = s3.bucket(bucket_name).object(name)
 return_state = obj.upload_file(save_file)
 puts return_state
+
+file_id = "test" + outfilenameb
+save_fileb = './' + outfilenameb
+s3.put_object({
+  body: outfilenameb,
+  bucket: bucket_name,
+  key: file_id
+})
 
 s3.buckets.limit(50).each do |b|
   puts "#{b.name}"
 end
+
