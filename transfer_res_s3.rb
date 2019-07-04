@@ -18,7 +18,7 @@ ida = SecureRandom.uuid
 idb = SecureRandom.uuid
 outfilenamea = ida.to_s + '.txt'
 file = File.open(outfilenamea, 'w')
-file.puts "AWS transfer test file.  Did it work? " + outfilename
+file.puts "AWS transfer test file.  Did it work? " + outfilenamea
 file.close
 
 outfilenameb = idb.to_s + '.txt'
