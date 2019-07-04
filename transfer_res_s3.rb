@@ -29,7 +29,7 @@ s3 = Aws::S3::Resource.new(region: region)
 
 save_file = './' + outfilenamea
 bucket_name = 'btapresultsbucket'
-name = File.basename(save_file)
+name = File.basename(save_file) + "test"
 
 obj = s3.bucket(bucket_name).object(name)
 return_state = obj.upload_file(save_file)
