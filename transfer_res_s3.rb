@@ -11,6 +11,7 @@ end
 require 'bundler'
 require 'securerandom'
 require 'aws-sdk-s3'
+require 'json'
 
 region = 'us-east-1'
 
@@ -36,12 +37,7 @@ puts return_state
 
 file_id = "test" + outfilenameb
 save_fileb = './' + outfilenameb
-s3.put_object(
-  body: outfilenameb,
-  bucket: bucket_name,
-  key: file_id
-)
-
+s3.put_object(bucket: bucket_name, key: file_id, body: outfilenameb)
 s3.buckets.limit(50).each do |b|
   puts "#{b.name}"
 end
