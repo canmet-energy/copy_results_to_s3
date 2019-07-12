@@ -38,13 +38,19 @@ if File.file?(out_file)
 	  end
     end
 	if osa_id == "" || osd_id == ""
-      file_id = "log_" + curr_time
-	  log_file_loc = "./" + file_id + "txt"
-	  log_file = File.open(log_file_loc, 'w')
-	  log_file.puts "Either could not find osa_id or osd_id in out.osw file."
-	  log_file.close
-	  log_obj = s3.bucket(bucket_name).object("log/" + file_id)
-	  log_obj.upload_file(log_file_loc)
+        file_id = "log_" + curr_time
+	log_file_loc = "./" + file_id + "txt"
+	log_file = File.open(log_file_loc, 'w')
+	log_file.puts "Either could not find osa_id or osd_id in out.osw file."
+	log_file.close
+	log_obj = s3.bucket(bucket_name).object("log/" + file_id)
+	log_obj.upload_file(log_file_loc)
+	resp = s3.list_objects_v2(bucket: bucket_name)
+	resp.each do |bucket_obj|
+	  if bucket_obj == log_obj
+            puts bucket_obj
+	  end
+	end
     else
       file_id = osa_id + "/" + osd_id + ".osw"
 	  out_obj = s3.bucket(bucket_name).object(file_id)
