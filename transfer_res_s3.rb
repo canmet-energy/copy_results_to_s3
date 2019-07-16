@@ -46,7 +46,6 @@ if File.file?(out_file)
 	  log_file.close
 	  log_obj = bucket.object("log/" + file_id)
 	  log_obj.upload_file(log_file_loc)
-	  end
     else
       file_id = osa_id + "/" + osd_id + ".osw"
 	  out_obj = bucket.object(file_id)
