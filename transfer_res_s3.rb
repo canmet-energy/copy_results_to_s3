@@ -26,6 +26,10 @@ curr_dir = Dir.pwd
 main_dir = curr_dir[0..-4]
 res_dirs = Dir.entries(main_dir).select {|entry| File.directory? File.join(main_dir,entry) and !(entry =='.' || entry == '..') }
 #out_dir = res_dirs.select { |res_dir| res_dir.match(/data_point_/) }.first
+
+puts out_dir
+puts main_dir
+
 out_file_loc = main_dir + out_dir + "/"
 
 puts out_file_loc
