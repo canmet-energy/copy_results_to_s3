@@ -13,7 +13,7 @@ require 'securerandom'
 require 'aws-sdk-s3'
 require 'json'
 
-out_dir = ARGV.to_s
+out_dir = ARGV[0].to_s
 
 region = 'us-east-1'
 s3 = Aws::S3::Resource.new(region: region)
