@@ -68,5 +68,5 @@ else
   log_file.puts "#{out_file} could not be found."
   log_file.close
   log_obj = bucket.object("log/" + file_id)
-  Log_obj.upload_file(log_file_loc)
+  log_obj.upload_file(log_file_loc)
 end
