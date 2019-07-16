@@ -25,15 +25,7 @@ curr_time = time_obj.year.to_s + "-" + time_obj.month.to_s + "-" + time_obj.day.
 curr_dir = Dir.pwd
 main_dir = curr_dir[0..-4]
 res_dirs = Dir.entries(main_dir).select {|entry| File.directory? File.join(main_dir,entry) and !(entry =='.' || entry == '..') }
-#out_dir = res_dirs.select { |res_dir| res_dir.match(/data_point_/) }.first
-
-puts out_dir
-puts main_dir
-
 out_file_loc = main_dir + out_dir + "/"
-
-puts out_file_loc
-
 out_file = out_file_loc + "out.osw"
 osa_id = ""
 osd_id = ""
@@ -61,7 +53,6 @@ if File.file?(out_file)
 	  resp = []
 	  while out_obj.exists? == false
 	    out_obj.upload_file(out_file)
-	    # resp = bucket.objects.select { |resp_each| resp_each.key == file_id }
 	  end
     end
   end
