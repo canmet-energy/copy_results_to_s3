@@ -16,6 +16,7 @@ require 'json'
 region = 'us-east-1'
 s3 = Aws::S3::Resource.new(region: region)
 bucket_name = 'btapresultsbucket'
+bucket = s3.bucket(bucket_name)
 
 time_obj = Time.new
 curr_time = time_obj.year.to_s + "-" + time_obj.month.to_s + "-" + time_obj.day.to_s + "_" + time_obj.hour.to_s + ":" + time_obj.min.to_s + ":" + time_obj.sec.to_s + ":" + time_obj.usec.to_s
@@ -38,23 +39,22 @@ if File.file?(out_file)
 	  end
     end
 	if osa_id == "" || osd_id == ""
-        file_id = "log_" + curr_time
-	log_file_loc = "./" + file_id + "txt"
-	log_file = File.open(log_file_loc, 'w')
-	log_file.puts "Either could not find osa_id or osd_id in out.osw file."
-	log_file.close
-	log_obj = s3.bucket(bucket_name).object("log/" + file_id)
-	log_obj.upload_file(log_file_loc)
-	resp = s3.list_objects_v2(bucket: bucket_name)
-	resp.each do |bucket_obj|
-	  if bucket_obj == log_obj
-            puts bucket_obj
+      file_id = "log_" + curr_time
+	  log_file_loc = "./" + file_id + "txt"
+	  log_file = File.open(log_file_loc, 'w')
+	  log_file.puts "Either could not find osa_id or osd_id in out.osw file."
+	  log_file.close
+	  log_obj = bucket.object("log/" + file_id)
+	  log_obj.upload_file(log_file_loc)
 	  end
-	end
     else
       file_id = osa_id + "/" + osd_id + ".osw"
-	  out_obj = s3.bucket(bucket_name).object(file_id)
-	  out_obj.upload_file(out_file)
+	  out_obj = bucket.object(file_id)
+	  resp = []
+	  while resp == []
+	    out_obj.upload_file(out_file)
+	    resp = bucket.objects.select { |resp_each| resp_each.key == file_id }
+	  end
     end
   end
 else
@@ -63,6 +63,6 @@ else
   log_file = File.open(log_file_loc, 'w')
   log_file.puts "#{out_file} could not be found."
   log_file.close
-  log_obj = s3.bucket(bucket_name).object("log/" + file_id)
+  log_obj = bucket.object("log/" + file_id)
   Log_obj.upload_file(log_file_loc)
 end
