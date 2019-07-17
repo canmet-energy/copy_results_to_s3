@@ -19,7 +19,7 @@ s3 = Aws::S3::Resource.new(region: region)
 bucket_name = 'btapresultsbucket'
 bucket = s3.bucket(bucket_name)
 
-res_path = "/mnt/openstudio/server/assets"
+res_path = "/mnt/openstudio/server/assets/"
 res_file = "results." + analysis_id + ".zip"
 res_file_path = res_path + res_file
 
