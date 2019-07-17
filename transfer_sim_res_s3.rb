@@ -1,5 +1,14 @@
 #!/usr/bin/env ruby
 
+gem_loc = '/usr/local/lib/ruby/gems/2.2.0/gems/'
+gem_dirs = Dir.entries(gem_loc).select {|entry| File.directory? File.join(gem_loc,entry) and !(entry =='.' || entry == '..') }
+gem_dirs.sort.each do |gem_dir|
+  lib_loc = ''
+  lib_loc = gem_loc + gem_dir + '/lib'
+  $LOAD_PATH.unshift(lib_loc) unless $LOAD_PATH.include?(lib_loc)
+end 
+
+require 'bundler'
 require 'aws-sdk-s3'
 require 'json'
 
