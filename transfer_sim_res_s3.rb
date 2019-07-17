@@ -19,10 +19,9 @@ s3 = Aws::S3::Resource.new(region: region)
 bucket_name = 'btapresultsbucket'
 bucket = s3.bucket(bucket_name)
 
-res_path = "/mnt/openstudio/assets/"
+res_path = "/mnt/openstudio/server/assets"
 res_file = "results." + analysis_id + ".zip"
 res_file_path = res_path + res_file
-
 
 time_obj = Time.new
 curr_time = time_obj.year.to_s + "-" + time_obj.month.to_s + "-" + time_obj.day.to_s + "_" + time_obj.hour.to_s + ":" + time_obj.min.to_s + ":" + time_obj.sec.to_s + ":" + time_obj.usec.to_s
@@ -38,7 +37,7 @@ else
   file_id = "log_" + curr_time
   log_file_loc = "./" + file_id + ".txt"
   log_file = File.open(log_file_loc, 'w')
-  log_file.puts "#{out_file} could not be found."
+  log_file.puts "#{res_file_path} could not be found."
   log_file.close
   log_obj = bucket.object("log/" + file_id)
   log_obj.upload_file(log_file_loc)
