@@ -36,7 +36,7 @@ require 'csv'
 def extract_data_from_osw(osw_json:, uuid:, aid:)
   results = osw_json
   out_json = {}
-  error_return = []
+  error_return = ""
   output_folder = './'
   #itterate through all the steps of the osw file
   results['steps'].each do |measure|
@@ -140,7 +140,7 @@ def process_simulation_json(json:, uuid:, aid:, osw_file:)
   # and add separate building information and uuid key
   #json contains original qaqc json file on start
 
-  error_return = []
+  error_return = ""
   building_type = ""
   epw_file = ""
   template = ""
