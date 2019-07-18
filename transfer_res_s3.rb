@@ -24,86 +24,6 @@ require 'base64'
 require 'colored'
 require 'csv'
 
-out_dir = ARGV[0].to_s
-
-#Set up s3 bucket info
-region = 'us-east-1'
-s3 = Aws::S3::Resource.new(region: region)
-bucket_name = 'btapresultsbucket'
-bucket = s3.bucket(bucket_name)
-
-#Get time information used for error logging
-time_obj = Time.new
-curr_time = time_obj.year.to_s + "-" + time_obj.month.to_s + "-" + time_obj.day.to_s + "_" + time_obj.hour.to_s + ":" + time_obj.min.to_s + ":" + time_obj.sec.to_s + ":" + time_obj.usec.to_s
-
-#Find the osw file.
-curr_dir = Dir.pwd
-main_dir = curr_dir[0..-4]
-res_dirs = Dir.entries(main_dir).select {|entry| File.directory? File.join(main_dir,entry) and !(entry =='.' || entry == '..') }
-out_file_loc = main_dir + out_dir + "/"
-out_file = out_file_loc + "out.osw"
-osa_id = ""
-osd_id = ""
-file_id = ""
-
-#Check if the osw exists
-if File.file?(out_file)
-  #Get the analysis id and datapoint id from the file
-  File.open(out_file, "r") do |f|
-    f.each_line do |line|
-      if line.match(/   \"osa_id\" : \"/)
-        osa_id = line[15..-4]
-      elsif line.match(/   \"osd_id\" : \"/)
-        osd_id = line[15..-4]
-      end
-    end
-    #If either the analysis id or datapoint id are missing from the osw file put an error log on S3
-    if osa_id == "" || osd_id == ""
-      file_id = "log_" + curr_time
-      log_file_loc = "./" + file_id + "txt"
-      log_file = File.open(log_file_loc, 'w')
-      log_file.puts "Either could not find osa_id or osd_id in out.osw file."
-      log_file.close
-      log_obj = bucket.object("log/" + file_id)
-      log_obj.upload_file(log_file_loc)
-    else
-      #Transfer osw to S3
-      osw_file_id = osa_id + "/" + osd_id + ".osw"
-      out_obj = bucket.object(osw_file_id)
-      while out_obj.exists? == false
-        out_obj.upload_file(out_file)
-      end
-      osw_json = JSON.parse(File.read(out_file))
-
-      #Get qaqc_info and catch any errors that are returned
-      qaqc_info, error_info = extract_data_from_osw(osw_json: osw_json, uuid: osd_id, aid: osa_id)
-
-      #Transfer qaqc json to S3
-      qaqc_file_id = osa_id + "/" + "qaqc_" + osd_id + ".json"
-      qaqc_out_obj = bucket.object(qaqc_file_id)
-      while qaqc_out_obj.exists? == false
-        qaqc_out_obj.upload_file(qaqc_info)
-      end
-
-      #Transfer error_info csv to S3
-      error_file_id = osa_id + "/" + "error_" + osd_id + ".csv"
-      error_out_obj = bucket.object(error_file_id)
-      while error_out_obj.exists? == false
-        error_out_obj.upload_file(error_info)
-      end
-    end
-  end
-else
-  #If the osw is ont there push a log with the error onto s3
-  file_id = "log_" + curr_time
-  log_file_loc = "./" + file_id + "txt"
-  log_file = File.open(log_file_loc, 'w')
-  log_file.puts "#{out_file} could not be found."
-  log_file.close
-  log_obj = bucket.object("log/" + file_id)
-  log_obj.upload_file(log_file_loc)
-end
-
 # Extract data from the osw file and write it on the disk. This method also calls process_simulation_json method
 # which appends the qaqc data to the simulations.json. it only happens if the measure `btap_results` exist with
 # `btap_results_json_zip` variable stored as part of the measure
@@ -278,4 +198,84 @@ def process_simulation_json(json:, uuid:, aid:, osw_file:)
     puts exception
   end
   return json, error_return
+end
+
+out_dir = ARGV[0].to_s
+
+#Set up s3 bucket info
+region = 'us-east-1'
+s3 = Aws::S3::Resource.new(region: region)
+bucket_name = 'btapresultsbucket'
+bucket = s3.bucket(bucket_name)
+
+#Get time information used for error logging
+time_obj = Time.new
+curr_time = time_obj.year.to_s + "-" + time_obj.month.to_s + "-" + time_obj.day.to_s + "_" + time_obj.hour.to_s + ":" + time_obj.min.to_s + ":" + time_obj.sec.to_s + ":" + time_obj.usec.to_s
+
+#Find the osw file.
+curr_dir = Dir.pwd
+main_dir = curr_dir[0..-4]
+res_dirs = Dir.entries(main_dir).select {|entry| File.directory? File.join(main_dir,entry) and !(entry =='.' || entry == '..') }
+out_file_loc = main_dir + out_dir + "/"
+out_file = out_file_loc + "out.osw"
+osa_id = ""
+osd_id = ""
+file_id = ""
+
+#Check if the osw exists
+if File.file?(out_file)
+  #Get the analysis id and datapoint id from the file
+  File.open(out_file, "r") do |f|
+    f.each_line do |line|
+      if line.match(/   \"osa_id\" : \"/)
+        osa_id = line[15..-4]
+      elsif line.match(/   \"osd_id\" : \"/)
+        osd_id = line[15..-4]
+      end
+    end
+    #If either the analysis id or datapoint id are missing from the osw file put an error log on S3
+    if osa_id == "" || osd_id == ""
+      file_id = "log_" + curr_time
+      log_file_loc = "./" + file_id + "txt"
+      log_file = File.open(log_file_loc, 'w')
+      log_file.puts "Either could not find osa_id or osd_id in out.osw file."
+      log_file.close
+      log_obj = bucket.object("log/" + file_id)
+      log_obj.upload_file(log_file_loc)
+    else
+      #Transfer osw to S3
+      osw_file_id = osa_id + "/" + osd_id + ".osw"
+      out_obj = bucket.object(osw_file_id)
+      while out_obj.exists? == false
+        out_obj.upload_file(out_file)
+      end
+      osw_json = JSON.parse(File.read(out_file))
+
+      #Get qaqc_info and catch any errors that are returned
+      qaqc_info, error_info = extract_data_from_osw(osw_json: osw_json, uuid: osd_id, aid: osa_id)
+
+      #Transfer qaqc json to S3
+      qaqc_file_id = osa_id + "/" + "qaqc_" + osd_id + ".json"
+      qaqc_out_obj = bucket.object(qaqc_file_id)
+      while qaqc_out_obj.exists? == false
+        qaqc_out_obj.upload_file(qaqc_info)
+      end
+
+      #Transfer error_info csv to S3
+      error_file_id = osa_id + "/" + "error_" + osd_id + ".csv"
+      error_out_obj = bucket.object(error_file_id)
+      while error_out_obj.exists? == false
+        error_out_obj.upload_file(error_info)
+      end
+    end
+  end
+else
+  #If the osw is ont there push a log with the error onto s3
+  file_id = "log_" + curr_time
+  log_file_loc = "./" + file_id + "txt"
+  log_file = File.open(log_file_loc, 'w')
+  log_file.puts "#{out_file} could not be found."
+  log_file.close
+  log_obj = bucket.object("log/" + file_id)
+  log_obj.upload_file(log_file_loc)
 end
