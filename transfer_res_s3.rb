@@ -37,6 +37,7 @@ def extract_data_from_osw(osw_json:, uuid:, aid:)
   results = osw_json
   out_json = {}
   error_return = []
+  output_folder = './'
   #itterate through all the steps of the osw file
   results['steps'].each do |measure|
     #puts "measure.name: #{measure['name']}"
