@@ -9,15 +9,32 @@ s3 = Aws::S3::Resource.new(region: region)
 bucket_name = 'btapresultsbucket'
 bucket = s3.bucket(bucket_name)
 
+error_temp_file = './error_temp.json'
+error_temp_col = './error_col.json'
+error_full = []
 bucket.objects.each do |bucket_info|
   unless (/#{analysis_id}/ =~ bucket_info.key.to_s).nil?
     replacekey = bucket_info.key.to_s.gsub(/\//, '_')
     #puts replacekey.to_s
     unless (/error_/ =~ replacekey.to_s).nil? || (/\.json/ =~ replacekey.to_s).nil?
       puts bucket_info.key.to_s
-      bucket_info.download_file("./" + replacekey)
+      bucket_info.download_file(error_temp_file)
+      if File.exist?(error_temp_file)
+        error_json = JSON.parse(File.read(error_temp_file))
+        error_json.each do |error_out|
+          error_full << error_out
+        end
+        File.delete(error_temp_file)
+      end
     end
   end
+end
+File.open(error_temp_col,"w") {|each_file| each_file.write(JSON.pretty_generate(error_full))}
+
+out_id = analysis_id + "/" + "error_col.json"
+out_obj = bucket.object(out_id)
+while out_obj.exists? == false
+  out_obj.upload_file(error_temp_col)
 end
 #puts analysis_id
 
