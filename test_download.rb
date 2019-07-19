@@ -9,8 +9,8 @@ s3 = Aws::S3::Resource.new(region: region)
 bucket_name = 'btapresultsbucket'
 bucket = s3.bucket(bucket_name)
 
-s3.buckets.each do |bucket_info|
-  puts bucket_info.name
+bucket.objects.each do |bucket_info|
+  puts bucket_info
 end
 
 #res_path = "/mnt/openstudio/server/assets/"
