@@ -82,7 +82,7 @@ bucket.objects.each do |bucket_info|
 end
 #Generated a collated error.json file using the collated array of datapoint error hashes.
 #Create an s3 object and push the collated error.json file to it.
-if File.exist?(error_temp_col)
+if error_col.empty?
   File.open(error_temp_col,"w") {|each_file| each_file.write(JSON.pretty_generate(error_col))}
   error_out_id = analysis_id + "/" + "error_col.json"
   error_out_obj = bucket.object(error_out_id)
@@ -103,7 +103,7 @@ end
 
 #Generated a collated qaqc.json file using the collated array of datapoint qaqc hashes.
 #Create an s3 object and push the collated qaqc.json file to it (this makes the simulations.json for the analysis).
-if File.exist?(qaqc_temp_col)
+if qaqc_col.empty?
   File.open(qaqc_temp_col,"w") {|each_file| each_file.write(JSON.pretty_generate(qaqc_col))}
   qaqc_out_id = analysis_id + "/" + "simulations.json"
   qaqc_out_obj = bucket.object(qaqc_out_id)
