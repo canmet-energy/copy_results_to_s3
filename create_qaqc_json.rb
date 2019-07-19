@@ -35,8 +35,8 @@ require 'csv'
 # # @param aid [:string] analysis ID
 def extract_data_from_osw(osw_json:, uuid:, aid:)
   results = osw_json
-  out_json = {}
-  error_return = ""
+  out_json = []
+  error_return = []
   output_folder = './'
   #itterate through all the steps of the osw file
   results['steps'].each do |measure|
@@ -121,8 +121,9 @@ def extract_data_from_osw(osw_json:, uuid:, aid:)
         analysis_json = JSON.parse(RestClient.get("http://web:80/analyses/#{aid}.json", headers={}))
         json['analysis_id']=analysis_json['analysis']['_id']
         json['analysis_name']=analysis_json['analysis']['display_name']
-        out_json, curr_error_return = process_simulation_json(json: out_json, uuid: uuid, aid: aid, osw_file: results)
-        error_return = error_return + curr_error_return
+        ret_json, curr_error_return = process_simulation_json(json: json, uuid: uuid, aid: aid, osw_file: results)
+        out_json << ret_json
+        error_return << curr_error_return
         puts "#{uuid}.json ok"
       end
     end # if measure["name"] == "btapresults" && measure.include?("result")
@@ -192,8 +193,19 @@ def process_simulation_json(json:, uuid:, aid:, osw_file:)
       !!(line =~ matches)
     }
     json_eplus_warn = json_eplus_warn.join("\n") unless json_eplus_warn.nil?
-    out = %W{#{bldg_type} #{template} #{city} #{json_error} #{json_sanity} #{json_eplus_warn} #{json_eplus_fatal} #{json_eplus_severe} }
-    error_return = error_return + out
+    error_return = {
+        bldg_type: bldg_type,
+        template: template,
+        city: city,
+        json_error: json_error,
+        json_sanity: json_sanity,
+        json_eplus_warn: json_eplus_warn,
+        json_eplus_fatal: json_eplus_fatal,
+        json_eplus_sever: json_eplus_severe,
+        analysis_id: json['analysis_id'],
+        analysis_name: json['analysis_name'],
+        run_uuid: uuid
+    }
   rescue => exception
     puts "[Ignore] There was an error writing to the BTAP Error Log"
     puts exception
@@ -263,7 +275,7 @@ if File.file?(out_file)
       end
 
       #Transfer error_info csv to S3
-      error_file_id = osa_id + "/" + "error_" + osd_id + ".csv"
+      error_file_id = osa_id + "/" + "error_" + osd_id + ".json"
       error_out_obj = bucket.object(error_file_id)
       while error_out_obj.exists? == false
         error_out_obj.upload_file(error_info)
