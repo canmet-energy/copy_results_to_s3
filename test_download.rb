@@ -10,6 +10,7 @@ bucket_name = 'btapresultsbucket'
 bucket = s3.bucket(bucket_name)
 
 bucket.objects.each do |bucket_info|
+=begin
   unless (/#{analysis_id}/ =~ bucket_info.key.to_s).nil?
     replacekey = bucket_info.key.to_s.gsub(/\//, '_')
     puts replacekey.to_s
@@ -17,17 +18,16 @@ bucket.objects.each do |bucket_info|
       puts bucket_info.key.to_s
     end
   end
-=begin
-  unless (/#{analysis_id}/ =~ bucket_info.key.to_s).nil? && (/qaqc/ =~ bucket_info.key.to_s).nil? && (/\.json/ =~ bucket_info.key.to_s).nil?
-    puts bucket_info.key
-    puts "analysis_id:"
-    puts /#{analysis_id}/ =~ bucket_info.key.to_s
-    puts "qaqc:"
-    puts /qaqc/ =~ bucket_info.key.to_s
-    puts "json:"
-    puts /json/ =~ bucket_info.key.to_s
-  end
 =end
+  unless (/#{analysis_id}/ =~ bucket_info.key.to_s).nil? and (/qaqc/ =~ bucket_info.key.to_s).nil? || (/\.json/ =~ bucket_info.key.to_s).nil?
+    puts bucket_info.key
+    #puts "analysis_id:"
+    #puts /#{analysis_id}/ =~ bucket_info.key.to_s
+    #puts "qaqc:"
+    #puts /qaqc/ =~ bucket_info.key.to_s
+    #puts "json:"
+    #puts /json/ =~ bucket_info.key.to_s
+  end
 end
 
 puts analysis_id
