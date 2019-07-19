@@ -10,26 +10,27 @@ bucket_name = 'btapresultsbucket'
 bucket = s3.bucket(bucket_name)
 
 bucket.objects.each do |bucket_info|
-=begin
+
   unless (/#{analysis_id}/ =~ bucket_info.key.to_s).nil?
     replacekey = bucket_info.key.to_s.gsub(/\//, '_')
-    puts replacekey.to_s
-    unless (/qaqc/ =~ replacekey.to_s).nil? && (/\.json/ =~ replacekey.to_s)
+    #puts replacekey.to_s
+    unless (/qaqc/ =~ replacekey.to_s).nil? || (/\.json/ =~ replacekey.to_s)
       puts bucket_info.key.to_s
     end
   end
-=end
+
+=begin
   unless (/#{analysis_id}/ =~ bucket_info.key.to_s).nil? and (/qaqc/ =~ bucket_info.key.to_s).nil? || (/\.json/ =~ bucket_info.key.to_s).nil?
     puts bucket_info.key
-    #puts "analysis_id:"
-    #puts /#{analysis_id}/ =~ bucket_info.key.to_s
-    #puts "qaqc:"
-    #puts /qaqc/ =~ bucket_info.key.to_s
-    #puts "json:"
-    #puts /json/ =~ bucket_info.key.to_s
+    puts "analysis_id:"
+    puts /#{analysis_id}/ =~ bucket_info.key.to_s
+    puts "qaqc:"
+    puts /qaqc/ =~ bucket_info.key.to_s
+    puts "json:"
+    puts /json/ =~ bucket_info.key.to_s
   end
+=end
 end
-
 puts analysis_id
 
 #res_path = "/mnt/openstudio/server/assets/"
