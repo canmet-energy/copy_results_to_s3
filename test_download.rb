@@ -15,6 +15,8 @@ bucket.objects.each do |bucket_info|
   end
 end
 
+puts analysis_id
+
 #res_path = "/mnt/openstudio/server/assets/"
 #res_file = "results." + analysis_id + ".zip"
 #res_file_path = res_path + res_file
