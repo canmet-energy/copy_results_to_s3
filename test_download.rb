@@ -16,7 +16,6 @@ bucket.objects.each do |bucket_info|
     unless (/error_/ =~ replacekey.to_s).nil? || (/\.json/ =~ replacekey.to_s).nil?
       puts bucket_info.key.to_s
       bucket_info.download_file("./" + replacekey)
-      puts test_data
     end
   end
 end
