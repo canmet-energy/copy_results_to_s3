@@ -265,21 +265,29 @@ if File.file?(out_file)
       osw_json = JSON.parse(File.read(out_file))
 
       #Get qaqc_info and catch any errors that are returned
+      qaqc_file_loc = './out_json_file.json'
+      error_file_loc = './out_error_file.json'
       qaqc_info, error_info = extract_data_from_osw(osw_json: osw_json, uuid: osd_id, aid: osa_id)
+      #Create temporary files for s3 upload.  I tried using streaming to stream the data objects to s3 but that seems to
+      #have problems so used this, roundabout, ugly, method instead.
+      File.open(qaqc_file_loc,"w") {|each_file| each_file.write(JSON.pretty_generate(qaqc_info))}
+      File.open(error_file_loc,"w") {|each_file| each_file.write(JSON.pretty_generate(error_info))}
 
       #Transfer qaqc json to S3
       qaqc_file_id = osa_id + "/" + "qaqc_" + osd_id + ".json"
       qaqc_out_obj = bucket.object(qaqc_file_id)
       while qaqc_out_obj.exists? == false
-        qaqc_out_obj.upload_stream(JSON.pretty_generate(qaqc_info))
+        qaqc_out_obj.upload_file(qaqc_file_loc)
       end
+      File.delete(qaqc_file_loc) if File.exist?(qaqc_file_loc)
 
       #Transfer error_info csv to S3
       error_file_id = osa_id + "/" + "error_" + osd_id + ".json"
       error_out_obj = bucket.object(error_file_id)
       while error_out_obj.exists? == false
-        error_out_obj.upload_stream(JSON.pretty_generate(error_info))
+        error_out_obj.upload_file(error_file_loc)
       end
+      File.delete(error_file_loc) if File.exist?(error_file_loc)
     end
   end
 else
