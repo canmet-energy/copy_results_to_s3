@@ -15,7 +15,7 @@ bucket.objects.each do |bucket_info|
     #puts replacekey.to_s
     unless (/error_/ =~ replacekey.to_s).nil? || (/\.json/ =~ replacekey.to_s).nil?
       puts bucket_info.key.to_s
-      test_data = bucket_info.data
+      test_data = bucket_info.load
       puts test_data
     end
   end
