@@ -13,7 +13,7 @@ bucket.objects.each do |bucket_info|
   unless (/#{analysis_id}/ =~ bucket_info.key.to_s).nil?
     replacekey = bucket_info.key.to_s.gsub(/\//, '_')
     #puts replacekey.to_s
-    unless (/qaqc/ =~ replacekey.to_s).nil? || (/\.json/ =~ replacekey.to_s).nil?
+    unless (/error_/ =~ replacekey.to_s).nil? || (/\.json/ =~ replacekey.to_s).nil?
       puts bucket_info.key.to_s
       test_data = bucket_info.data
       puts test_data
