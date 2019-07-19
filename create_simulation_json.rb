@@ -39,10 +39,10 @@ bucket.objects.each do |bucket_info|
     #Search for objects with the current analysis id that have error and .json in them and collate them into one big
     #collated error.json object and push it to s3.
     unless (/error_/ =~ replacekey.to_s).nil? || (/\.json/ =~ replacekey.to_s).nil?
-      puts bucket_info.key
       #If you find a datapoint error file try downloading it and adding the information to the error_col array of hashes.
       error_index = 0
       while error_index < 10
+        puts error_index
         error_index += 1
         bucket_info.download_file(error_temp_file)
         error_index = 11 if File.exist?(error_temp_file)
@@ -61,10 +61,10 @@ bucket.objects.each do |bucket_info|
     #Search for objects with the current analysis id that have qaqc and .json in them and collate them into one big
     #collated error.json object and push it to s3.
     unless (/qaqc_/ =~ replacekey.to_s).nil? || (/\.json/ =~ replacekey.to_s).nil?
-      puts bucket_info.key
       #If you find a datapoint qaqc file try downloading it and adding the information to the qaqc_col array of hashes.
       qaqc_index = 0
       while qaqc_index < 10
+        puts qaqc_index
         qaqc_index += 1
         bucket_info.download_file(qaqc_temp_file)
         qaqc_index = 11 if File.exist?(qaqc_temp_file)
