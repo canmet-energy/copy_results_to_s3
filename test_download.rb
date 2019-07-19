@@ -10,7 +10,7 @@ bucket_name = 'btapresultsbucket'
 bucket = s3.bucket(bucket_name)
 
 bucket.objects.each do |bucket_info|
-  puts bucket_info
+  puts bucket_info.key
 end
 
 #res_path = "/mnt/openstudio/server/assets/"
