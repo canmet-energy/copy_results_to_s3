@@ -79,22 +79,42 @@ bucket.objects.each do |bucket_info|
 end
 #Generated a collated error.json file using the collated array of datapoint error hashes.
 #Create an s3 object and push the collated error.json file to it.
-File.open(error_temp_col,"w") {|each_file| each_file.write(JSON.pretty_generate(error_col))}
-error_out_id = analysis_id + "/" + "error_col.json"
-error_out_obj = bucket.object(error_out_id)
-while error_out_obj.exists? == false
-  error_out_obj.upload_file(error_temp_col)
+if File.exist?(error_temp_col)
+  File.open(error_temp_col,"w") {|each_file| each_file.write(JSON.pretty_generate(error_col))}
+  error_out_id = analysis_id + "/" + "error_col.json"
+  error_out_obj = bucket.object(error_out_id)
+  while error_out_obj.exists? == false
+    error_out_obj.upload_file(error_temp_col)
+  end
+  #Delete the collated error.json file.
+  File.delete(error_temp_col)
+else
+  file_id = "error_coll_log_" + curr_time
+  log_file_loc = "./" + file_id + ".txt"
+  log_file = File.open(log_file_loc, 'w')
+  log_file.puts "#{error_temp_col} could not be found."
+  log_file.close
+  log_obj = bucket.object("log/" + file_id)
+  log_obj.upload_file(log_file_loc)
 end
 
 #Generated a collated qaqc.json file using the collated array of datapoint qaqc hashes.
 #Create an s3 object and push the collated qaqc.json file to it (this makes the simulations.json for the analysis).
-File.open(qaqc_temp_col,"w") {|each_file| each_file.write(JSON.pretty_generate(qaqc_col))}
-qaqc_out_id = analysis_id + "/" + "simulations.json"
-qaqc_out_obj = bucket.object(qaqc_out_id)
-while qaqc_out_obj.exists? == false
-  qaqc_out_obj.upload_file(qaqc_temp_col)
+if File.exist?(qaqc_temp_col)
+  File.open(qaqc_temp_col,"w") {|each_file| each_file.write(JSON.pretty_generate(qaqc_col))}
+  qaqc_out_id = analysis_id + "/" + "simulations.json"
+  qaqc_out_obj = bucket.object(qaqc_out_id)
+  while qaqc_out_obj.exists? == false
+    qaqc_out_obj.upload_file(qaqc_temp_col)
+  end
+  #Delete the collated qaqc.json file.
+  File.delete(qaqc_temp_col)
+else
+  file_id = "qaqc_coll_log_" + curr_time
+  log_file_loc = "./" + file_id + ".txt"
+  log_file = File.open(log_file_loc, 'w')
+  log_file.puts "#{qaqc_temp_col} could not be found."
+  log_file.close
+  log_obj = bucket.object("log/" + file_id)
+  log_obj.upload_file(log_file_loc)
 end
-
-#Delete the collated error.json and qaqc.json files.
-File.delete(error_temp_col)
-File.delete(qaqc_temp_col)
