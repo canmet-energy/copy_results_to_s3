@@ -12,7 +12,9 @@ bucket = s3.bucket(bucket_name)
 bucket.objects.each do |bucket_info|
   unless (/#{analysis_id}/ =~ bucket_info.key.to_s).nil?
     replacekey = bucket_info.key.to_s.gsub(/\//, '_')
-    puts replacekey
+    unless (/qaqc/ =~ replacekey).nil? && (/\.json/ =~ replacekey)
+      puts bucket_info.key.to_s
+    end
   end
 =begin
   unless (/#{analysis_id}/ =~ bucket_info.key.to_s).nil? && (/qaqc/ =~ bucket_info.key.to_s).nil? && (/\.json/ =~ bucket_info.key.to_s).nil?
