@@ -42,7 +42,6 @@ bucket.objects.each do |bucket_info|
       #If you find a datapoint error file try downloading it and adding the information to the error_col array of hashes.
       error_index = 0
       while error_index < 10
-        puts error_index
         error_index += 1
         bucket_info.download_file(error_temp_file)
         error_index = 11 if File.exist?(error_temp_file)
@@ -64,7 +63,6 @@ bucket.objects.each do |bucket_info|
       #If you find a datapoint qaqc file try downloading it and adding the information to the qaqc_col array of hashes.
       qaqc_index = 0
       while qaqc_index < 10
-        puts qaqc_index
         qaqc_index += 1
         bucket_info.download_file(qaqc_temp_file)
         qaqc_index = 11 if File.exist?(qaqc_temp_file)
@@ -84,7 +82,7 @@ bucket.objects.each do |bucket_info|
 end
 #Generated a collated error.json file using the collated array of datapoint error hashes.
 #Create an s3 object and push the collated error.json file to it.
-if error_col.empty?
+unless error_col.empty?
   File.open(error_temp_col,"w") {|each_file| each_file.write(JSON.pretty_generate(error_col))}
   error_out_id = analysis_id + "/" + "error_col.json"
   error_out_obj = bucket.object(error_out_id)
@@ -93,7 +91,8 @@ if error_col.empty?
   end
   #Delete the collated error.json file.
   File.delete(error_temp_col)
-else
+end
+if error_col.empty?
   file_id = "error_coll_log_" + curr_time
   log_file_loc = "./" + file_id + ".txt"
   log_file = File.open(log_file_loc, 'w')
@@ -105,7 +104,7 @@ end
 
 #Generated a collated qaqc.json file using the collated array of datapoint qaqc hashes.
 #Create an s3 object and push the collated qaqc.json file to it (this makes the simulations.json for the analysis).
-if qaqc_col.empty?
+unless qaqc_col.empty?
   File.open(qaqc_temp_col,"w") {|each_file| each_file.write(JSON.pretty_generate(qaqc_col))}
   qaqc_out_id = analysis_id + "/" + "simulations.json"
   qaqc_out_obj = bucket.object(qaqc_out_id)
@@ -114,7 +113,8 @@ if qaqc_col.empty?
   end
   #Delete the collated qaqc.json file.
   File.delete(qaqc_temp_col)
-else
+end
+if qaqc_col.empty?
   file_id = "qaqc_coll_log_" + curr_time
   log_file_loc = "./" + file_id + ".txt"
   log_file = File.open(log_file_loc, 'w')
