@@ -271,14 +271,14 @@ if File.file?(out_file)
       qaqc_file_id = osa_id + "/" + "qaqc_" + osd_id + ".json"
       qaqc_out_obj = bucket.object(qaqc_file_id)
       while qaqc_out_obj.exists? == false
-        qaqc_out_obj.upload_file(JSON.pretty_generate(qaqc_info))
+        qaqc_out_obj.upload_stream(JSON.pretty_generate(qaqc_info))
       end
 
       #Transfer error_info csv to S3
       error_file_id = osa_id + "/" + "error_" + osd_id + ".json"
       error_out_obj = bucket.object(error_file_id)
       while error_out_obj.exists? == false
-        error_out_obj.upload_file(JSON.pretty_generate(error_info))
+        error_out_obj.upload_stream(JSON.pretty_generate(error_info))
       end
     end
   end
