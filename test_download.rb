@@ -9,7 +9,7 @@ s3 = Aws::S3::Resource.new(region: region)
 bucket_name = 'btapresultsbucket'
 bucket = s3.bucket(bucket_name)
 
-puts s3.buckets.each do |bucket_info|
+s3.buckets.each do |bucket_info|
   puts bucket_info.name
 end
 
