@@ -11,7 +11,7 @@ bucket = s3.bucket(bucket_name)
 
 bucket.objects.each do |bucket_info|
   unless (/#{analysis_id}/ =~ bucket_info.key.to_s).nil?
-    replacekey = bucket_info.gsub(/\//, '_')
+    replacekey = bucket_info.key.to_s.gsub(/\//, '_')
     puts replacekey
   end
 =begin
