@@ -1,0 +1,339 @@
+#!/usr/bin/env ruby
+
+gem_loc = '/usr/local/lib/ruby/gems/2.2.0/gems/'
+gem_dirs = Dir.entries(gem_loc).select {|entry| File.directory? File.join(gem_loc,entry) and !(entry =='.' || entry == '..') }
+gem_dirs.sort.each do |gem_dir|
+  lib_loc = ''
+  lib_loc = gem_loc + gem_dir + '/lib'
+  $LOAD_PATH.unshift(lib_loc) unless $LOAD_PATH.include?(lib_loc)
+end
+
+require 'bundler'
+require 'securerandom'
+require 'aws-sdk-s3'
+require 'json'
+
+require 'rest-client'
+require 'fileutils'
+require 'zip'
+require 'parallel'
+require 'optparse'
+require 'json'
+require 'base64'
+require 'colored'
+require 'csv'
+
+# Extract data from the osw file and write it on the disk. This method also calls process_simulation_json method
+# which appends the qaqc data to the simulations.json. it only happens if the measure `btap_results` exist with
+# `btap_results_json_zip` variable stored as part of the measure
+
+# @param osw_json [:hash] osw file in json hash format
+# @param output_folder [:string] parent folder where the data from osw will be extracted to
+# @param uuid [:string] UUID of the datapoint
+# @param simulations_json_folder [:string] root folder of the simulations.json file
+# # @param aid [:string] analysis ID
+def extract_data_from_osw(osw_json:, uuid:, aid:)
+  results = osw_json
+  out_json = []
+  error_return = []
+  output_folder = './'
+  #itterate through all the steps of the osw file
+  results['steps'].each do |measure|
+    #puts "measure.name: #{measure['name']}"
+    meausre_results_folder_map = {
+        'openstudio_results':[
+            {
+                'measure_result_var_name': "eplustbl_htm",
+                'filename': "#{output_folder}/eplus_table/#{uuid}-eplustbl.htm"
+            },
+            {
+                'measure_result_var_name': "report_html",
+                'filename': "#{output_folder}/os_report/#{uuid}-os-report.html"
+            }
+        ],
+        'btap_view_model':[
+            {
+                'measure_result_var_name': "view_model_html_zip",
+                'filename': "#{output_folder}/3d_model/#{uuid}_3d.html"
+            }
+        ],
+        'btap_results':[
+            {
+                'measure_result_var_name': "model_osm_zip",
+                'filename': "#{output_folder}/osm_files/#{uuid}.osm"
+            },
+            {
+                'measure_result_var_name': "btap_results_hourly_data_8760",
+                'filename': "#{output_folder}/8760_files/#{uuid}-8760_hourly_data.csv"
+            },
+            {
+                'measure_result_var_name': "btap_results_hourly_custom_8760",
+                'filename': "#{output_folder}/8760_files/#{uuid}-8760_hour_custom.csv"
+            },
+            {
+                'measure_result_var_name': "btap_results_monthly_7_day_24_hour_averages",
+                'filename': "#{output_folder}/8760_files/#{uuid}-mnth_24_hr_avg.csv"
+            },
+            {
+                'measure_result_var_name': "btap_results_monthly_24_hour_weekend_weekday_averages",
+                'filename': "#{output_folder}/8760_files/#{uuid}-mnth_weekend_weekday.csv"
+            },
+            {
+                'measure_result_var_name': "btap_results_enduse_total_24_hour_weekend_weekday_averages",
+                'filename': "#{output_folder}/8760_files/#{uuid}-endusetotal.csv"
+            }
+        ]
+    }
+
+    # if the measure is btapresults, then extract the osw file and qaqc json
+    # While processing the qaqc json file, add it to the simulations.json file
+    if measure["name"] == "btap_results" && measure.include?("result")
+      measure["result"]["step_values"].each do |values|
+        # extract the qaqc json blob data from the osw file and save it
+        # in the output folder
+        next unless values["name"] == 'btap_results_json_zip'
+        btap_results_json_zip_64 = values['value']
+        json_string =  Zlib::Inflate.inflate(Base64.strict_decode64( btap_results_json_zip_64 ))
+        json = JSON.parse(json_string)
+        # indicate if the current model is a baseline run or not
+        # json['is_baseline'] = "#{flags[:baseline]}"
+
+        #add ECM data to the json file
+        measure_data = []
+        results['steps'].each_with_index do |measure, index|
+          step = {}
+          measure_data << step
+          step['name'] = measure['name']
+          step['arguments'] = measure['arguments']
+          if measure.has_key?('result')
+            step['display_name'] = measure['result']['measure_display_name']
+            step['measure_class_name'] = measure['result']['measure_class_name']
+          end
+          step['index'] = index
+          # measure is an ecm if it starts with ecm_ (case ignored)
+          step['is_ecm'] = !(measure['name'] =~ /^ecm_/i).nil? # returns true if measure name starts with 'ecm_' (case ignored)
+        end
+
+        json['measures'] = measure_data
+
+        # add analysis_id and analysis name to the json file
+        analysis_json = JSON.parse(RestClient.get("http://web:80/analyses/#{aid}.json", headers={}))
+        json['analysis_id']=analysis_json['analysis']['_id']
+        json['analysis_name']=analysis_json['analysis']['display_name']
+        ret_json, curr_error_return = process_simulation_json(json: json, uuid: uuid, aid: aid, osw_file: results)
+        out_json << ret_json
+        error_return << curr_error_return
+        puts "#{uuid}.json ok"
+      end
+    end # if measure["name"] == "btapresults" && measure.include?("result")
+  end # of grab step files
+  return out_json, error_return
+end
+
+# This method will append qaqc data to simulations.json
+#
+# @param json [:hash] contains original qaqc json file of a datapoint
+# @param simulations_json_folder [:string] root folder of the simulations.json file
+# @param osw_file [:hash] contains the datapoint's osw file
+def process_simulation_json(json:, uuid:, aid:, osw_file:)
+  #modify the qaqc json file to remove eplusout.err information,
+  # and add separate building information and uuid key
+  #json contains original qaqc json file on start
+
+  error_return = ""
+  building_type = ""
+  epw_file = ""
+  template = ""
+
+  # get building_type, epw_file, and template from btap_create_necb_prototype_building inputs
+  # if possible
+  osw_file['steps'].each do |measure|
+    next unless measure["name"] == "btap_create_necb_prototype_building"
+    building_type = measure['arguments']["building_type"]
+    epw_file =      measure['arguments']["epw_file"]
+    template =      measure['arguments']["template"]
+  end
+
+  if json.has_key?('eplusout_err')
+    json_eplus_warn = json['eplusout_err']['warnings'] unless json['eplusout_err']['warnings'].nil?
+    json_eplus_fatal = json['eplusout_err']['fatal'].join("\n") unless json['eplusout_err']['fatal'].nil?
+    json_eplus_severe = json['eplusout_err']['severe'].join("\n") unless json['eplusout_err']['severe'].nil?
+
+    json['eplusout_err']['warnings'] = json['eplusout_err']['warnings'].size
+    json['eplusout_err']['severe'] = json['eplusout_err']['severe'].size
+    json['eplusout_err']['fatal'] = json['eplusout_err']['fatal'].size
+  else
+    error_return = error_return + "ERROR: Unable to find eplusout_err #{uuid}.json\n"
+  end
+  json['run_uuid'] = uuid
+  #puts "json['run_uuid'] #{json['run_uuid']}"
+  bldg = json['building']['name'].split('-')
+  json['building_type'] = (building_type == "" ? (bldg[1]) : (building_type)  )
+  json['template'] = (template == "" ? (bldg[0]) : (template)  )
+
+  # output the errors to the error_log
+  begin
+    # write building_type, template, epw_file, QAQC errors, and sanity check
+    # fails to the comma delimited file
+    bldg_type = json['building_type']
+    city = (epw_file == "" ? (json['geography']['city']) : (epw_file)  )
+    json_error = ''
+    json_error = json['errors'].join("\n") unless json['errors'].nil?
+    json_sanity = ''
+    json_sanity = json['sanity_check']['fail'].join("\n") unless json['sanity_check'].nil?
+
+    # Ignore some of the warnings that matches the regex. This feature is implemented
+    # to reduce the clutter in the error log. Additionally, if the number of
+    # lines exceed a limit, excel puts the cell contents in the next row
+    regex_patern_match = ['Blank Schedule Type Limits Name input -- will not be validated',
+                          'You may need to shorten the names']
+    matches = Regexp.new(Regexp.union(regex_patern_match),Regexp::IGNORECASE)
+    json_eplus_warn = json_eplus_warn.delete_if {|line|
+      !!(line =~ matches)
+    }
+    json_eplus_warn = json_eplus_warn.join("\n") unless json_eplus_warn.nil?
+    error_return = {
+        bldg_type: bldg_type,
+        template: template,
+        city: city,
+        json_error: json_error,
+        json_sanity: json_sanity,
+        json_eplus_warn: json_eplus_warn,
+        json_eplus_fatal: json_eplus_fatal,
+        json_eplus_sever: json_eplus_severe,
+        analysis_id: json['analysis_id'],
+        analysis_name: json['analysis_name'],
+        run_uuid: uuid
+    }
+  rescue => exception
+    puts "[Ignore] There was an error writing to the BTAP Error Log"
+    puts exception
+  end
+  return json, error_return
+end
+
+def unzip_test(zip_file:)
+  dest_file = './test_zip_out.json'
+  dest_file_mod = './test_zip_out2.json'
+  Zip::File.open(zip_file) do |file|
+    file.each do |entry|
+      puts "Extracting #{entry.name}"
+      entry.extract(dest_file)
+
+      content = entry.get_input_stream.read
+      json_in = JSON.parse(content)
+      File.open(dest_file_mod,"w") {|each_file| each_file.write(JSON.pretty_generate(json_in))}
+    end
+  end
+end
+
+
+analysis_id = ARGV[0].to_s
+
+region = 'us-east-1'
+s3 = Aws::S3::Resource.new(region: region)
+bucket_name = 'btapresultsbucket'
+bucket = s3.bucket(bucket_name)
+
+time_obj = Time.new
+curr_time = time_obj.year.to_s + "-" + time_obj.month.to_s + "-" + time_obj.day.to_s + "_" + time_obj.hour.to_s + ":" + time_obj.min.to_s + ":" + time_obj.sec.to_s + ":" + time_obj.usec.to_s
+
+error_temp_file = './error_temp.json'
+error_temp_col = './error_col.json'
+error_col = []
+
+qaqc_temp_file = './qaqc_temp.json'
+qaqc_temp_col = './qaqc_col.json'
+qaqc_col = []
+
+#Go through all of the objects in the s3 bucket searching for the qaqc.json and error.json objects related the current
+#analysis.
+bucket.objects.each do |bucket_info|
+  unless (/#{analysis_id}/ =~ bucket_info.key.to_s).nil?
+    #Remove the / characters with _ to avoid regex problems
+    replacekey = bucket_info.key.to_s.gsub(/\//, '_')
+    #Search for objects with the current analysis id that have error and .json in them and collate them into one big
+    #collated error.json object and push it to s3.
+    unless (/error_/ =~ replacekey.to_s).nil? || (/\.json/ =~ replacekey.to_s).nil?
+      #If you find a datapoint error file try downloading it and adding the information to the error_col array of hashes.
+      error_index = 0
+      while error_index < 10
+        error_index += 1
+        bucket_info.download_file(error_temp_file)
+        error_index = 11 if File.exist?(error_temp_file)
+      end
+      if File.exist?(error_temp_file)
+        error_json = JSON.parse(File.read(error_temp_file))
+        error_json.each do |error_out|
+          error_col << error_out
+        end
+        # Get rid of the datapoint error.json file that was just downloaded.
+        File.delete(error_temp_file)
+      else
+        puts "Could not download #{bucket_info.key}"
+      end
+    end
+    #Search for objects with the current analysis id that have qaqc and .json in them and collate them into one big
+    #collated error.json object and push it to s3.
+    unless (/qaqc_/ =~ replacekey.to_s).nil? || (/\.json/ =~ replacekey.to_s).nil?
+      #If you find a datapoint qaqc file try downloading it and adding the information to the qaqc_col array of hashes.
+      qaqc_index = 0
+      while qaqc_index < 10
+        qaqc_index += 1
+        bucket_info.download_file(qaqc_temp_file)
+        qaqc_index = 11 if File.exist?(qaqc_temp_file)
+      end
+      if File.exist?(qaqc_temp_file)
+        qaqc_json = JSON.parse(File.read(qaqc_temp_file))
+        qaqc_json.each do |qaqc_out|
+          qaqc_col << qaqc_out
+        end
+        # Get rid of the datapoint qaqc.json file that was just downloaded.
+        File.delete(qaqc_temp_file)
+      else
+        puts "Could not download #{bucket_info.key}"
+      end
+    end
+  end
+end
+#Generated a collated error.json file using the collated array of datapoint error hashes.
+#Create an s3 object and push the collated error.json file to it.
+if error_col.empty?
+  file_id = "error_coll_log_" + curr_time
+  log_file_loc = "./" + file_id + ".txt"
+  log_file = File.open(log_file_loc, 'w')
+  log_file.puts "#{error_temp_col} could not be found."
+  log_file.close
+  log_obj = bucket.object("log/" + file_id)
+  log_obj.upload_file(log_file_loc)
+else
+  File.open(error_temp_col,"w") {|each_file| each_file.write(JSON.pretty_generate(error_col))}
+  error_out_id = analysis_id + "/" + "error_col.json"
+  error_out_obj = bucket.object(error_out_id)
+  while error_out_obj.exists? == false
+    error_out_obj.upload_file(error_temp_col)
+  end
+  #Delete the collated error.json file.
+  File.delete(error_temp_col)
+end
+
+#Generated a collated qaqc.json file using the collated array of datapoint qaqc hashes.
+#Create an s3 object and push the collated qaqc.json file to it (this makes the simulations.json for the analysis).
+if qaqc_col.empty?
+  file_id = "qaqc_coll_log_" + curr_time
+  log_file_loc = "./" + file_id + ".txt"
+  log_file = File.open(log_file_loc, 'w')
+  log_file.puts "#{qaqc_temp_col} could not be found."
+  log_file.close
+  log_obj = bucket.object("log/" + file_id)
+  log_obj.upload_file(log_file_loc)
+else
+  File.open(qaqc_temp_col,"w") {|each_file| each_file.write(JSON.pretty_generate(qaqc_col))}
+  qaqc_out_id = analysis_id + "/" + "simulations.json"
+  qaqc_out_obj = bucket.object(qaqc_out_id)
+  while qaqc_out_obj.exists? == false
+    qaqc_out_obj.upload_file(qaqc_temp_col)
+  end
+  #Delete the collated qaqc.json file.
+  File.delete(qaqc_temp_col)
+end
