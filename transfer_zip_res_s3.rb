@@ -18,7 +18,7 @@ require 'zip'
 # Source copied and modified from https://github.com/rubyzip/rubyzip
 # creates a zip of the given file and places the zipped file at the
 # same location as the file
-def zip_single_file(in_file:, out_file_name:)
+def zip_results(in_file:, out_file_name:)
   return false unless File.exist?(in_file)
   folder = File.dirname(in_file)
   input_filename = File.basename(in_file)
@@ -80,7 +80,7 @@ if File.file?(out_file)
       #If an osa_id and osw_id exist then assume the osw is good and put it in the s3 bucket with the name
       #'osa_id/osd_id.osw'.
       out_file_name = 'temp_out_osw'
-      zip_file_loc = zip_single_file(in_file: out_file_loc, out_file_name: out_file_name)
+      zip_file_loc = zip_results(in_file: out_file_loc, out_file_name: out_file_name)
       file_id = osa_id + "/" + osd_id + ".zip"
       out_obj = bucket.object(file_id)
       while out_obj.exists? == false
