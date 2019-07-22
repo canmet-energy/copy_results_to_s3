@@ -18,42 +18,18 @@ require 'zip'
 # Source copied and modified from https://github.com/rubyzip/rubyzip
 # creates a zip of the given file and places the zipped file at the
 # same location as the file
-def zip_single_file(file)
-  return false unless File.exist?(file)
-  folder = File.dirname(file)
-  input_filename = File.basename(file)
-  zipfile_name = "#{folder}/#{input_filename}.zip"
+def zip_single_file(in_file:, out_file_name:)
+  return false unless File.exist?(in_file)
+  folder = File.dirname(in_file)
+  input_filename = File.basename(in_file)
+  zipfile_name = "#{folder}/#{out_file_name}.zip"
   puts "\n\tzipfile_name: #{zipfile_name}"
   ::Zip::File.open(zipfile_name, ::Zip::File::CREATE) do |zipfile|
     zipfile.get_output_stream(input_filename) do |out_file|
-      out_file.write(File.open(file, 'rb').read)
+      out_file.write(File.open(in_file, 'rb').read)
     end
   end
-end
-
-def zip_res(in_dir:, in_file:)
-  # Gather the required files
-  Zip.warn_invalid_date = false
-
-  # Zip Results
-  directory_to_zip = in_dir
-  output_file      = in_dir + 'output_osw.zip'
-  puts "Zipping Files...".cyan
-  zf = ZipFileGenerator.new(directory_to_zip, output_file)
-  zf.write()
-
-  puts "Zipping single files...".cyan
-
-  zip_single_file(in_file)
-  # list of files to create a local zipped copy
-  files_to_zip = ["/mnt/openstudio/server/assets/results/#{uuid}/failed_run_error_log.csv",
-                  "/mnt/openstudio/server/assets/results/#{uuid}/simulations.json"
-  ]
-  files_to_zip.each {|file|
-    puts "Zipping #{file}"
-    zip_single_file(file)
-  }
-  return out_zip
+  return zipfile_name
 end
 
 #Get datapoint directory passed from worker finalization script.
@@ -103,7 +79,8 @@ if File.file?(out_file)
     else
       #If an osa_id and osw_id exist then assume the osw is good and put it in the s3 bucket with the name
       #'osa_id/osd_id.osw'.
-      zip_file_loc = zip_res(in_dir: out_file_loc, in_file: out_file)
+      out_file_name = 'temp_out_osw'
+      zip_file_loc = zip_single_file(in_file: out_file_loc, out_file_name: out_file_name)
       file_id = osa_id + "/" + osd_id + ".zip"
       out_obj = bucket.object(file_id)
       while out_obj.exists? == false
