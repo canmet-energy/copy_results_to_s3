@@ -293,7 +293,7 @@ else
   error_out_id = analysis_id + "/" + "error_col.json"
   error_out_obj = bucket.object(error_out_id)
   while error_out_obj.exists? == false
-    error_out_obj.put(JSON.pretty_generate(error_col))
+    error_out_obj.put(body: JSON.pretty_generate(error_col))
   end
 end
 
@@ -310,6 +310,6 @@ else
   qaqc_out_id = analysis_id + "/" + "simulations.json"
   qaqc_out_obj = bucket.object(qaqc_out_id)
   while qaqc_out_obj.exists? == false
-    qaqc_out_obj.put(JSON.pretty_generate(qaqc_col))
+    qaqc_out_obj.put(body: JSON.pretty_generate(qaqc_col))
   end
 end
