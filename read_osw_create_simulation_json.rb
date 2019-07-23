@@ -212,6 +212,26 @@ def process_simulation_json(json:, uuid:, aid:, osw_file:)
   return json, error_return
 end
 
+# Source copied and modified from https://github.com/rubyzip/rubyzip
+# creates a zip of the given file and places the zipped file at the
+# same location as the file
+def zip_results(in_file:, out_file_name:)
+  return false unless File.exist?(in_file)
+  folder = File.dirname(in_file)
+  input_filename = File.basename(in_file)
+  zipfile_name = "#{folder}/#{out_file_name}.zip"
+  puts "\n\tzipfile_name: #{zipfile_name}"
+  ::Zip::File.open(zipfile_name, ::Zip::File::CREATE) do |zipfile|
+    zipfile.get_output_stream(input_filename) do |out_file|
+      out_file.write(File.open(in_file, 'rb').read)
+    end
+  end
+  return zipfile_name
+end
+
+# Source copied and modified from https://github.com/rubyzip/rubyzip.
+# This extracts the data from a zip file that presumably contains a json file.  It returns the contents of that file in
+# an array of hashes (if there were multiple files in the zip file.)
 def unzip_osw(zip_file:)
   osw_json = []
   Zip::File.open(zip_file) do |file|
@@ -234,6 +254,10 @@ time_obj = Time.new
 curr_time = time_obj.year.to_s + "-" + time_obj.month.to_s + "-" + time_obj.day.to_s + "_" + time_obj.hour.to_s + ":" + time_obj.min.to_s + ":" + time_obj.sec.to_s + ":" + time_obj.usec.to_s
 
 osw_temp_file = './osw_temp.json'
+qaqc_temp_col = './simulation.json'
+error_temp_col = './error_col.json'
+qaqc_zip = './qaqc'
+error_zip = './error'
 error_col = []
 qaqc_col = []
 
@@ -290,11 +314,15 @@ if error_col.empty?
   log_obj = bucket.object("log/" + file_id)
   log_obj.upload_file(log_file_loc)
 else
-  error_out_id = analysis_id + "/" + "error_col.json"
+  File.open(error_temp_col,"w") {|each_file| each_file.write(JSON.pretty_generate(error_col))}
+  error_zip_file = zip_results(in_file: error_temp_col, out_file_name: error_zip)
+  error_out_id = analysis_id + "/" + "error_col.zip"
   error_out_obj = bucket.object(error_out_id)
   while error_out_obj.exists? == false
-    error_out_obj.put(body: JSON.pretty_generate(error_col))
+    error_out_obj.upload_file(error_zip_file)
   end
+  File.delete(error_col) if File.exist?(error_col)
+  File.delete(error_zip_file) if File.exist?(error_zip_file)
 end
 
 #Put the collated array of datapoint qaqc hashes into a simulation.json file on s3.
@@ -307,9 +335,13 @@ if qaqc_col.empty?
   log_obj = bucket.object("log/" + file_id)
   log_obj.upload_file(log_file_loc)
 else
-  qaqc_out_id = analysis_id + "/" + "simulations.json"
+  File.open(qaqc_temp_col,"w") {|each_file| each_file.write(JSON.pretty_generate(qaqc_col))}
+  qaqc_zip_file = zip_results(in_file: qaqc_temp_col, out_file_name: qaqc_zip)
+  qaqc_out_id = analysis_id + "/" + "simulations.zip"
   qaqc_out_obj = bucket.object(qaqc_out_id)
   while qaqc_out_obj.exists? == false
-    qaqc_out_obj.put(body: JSON.pretty_generate(qaqc_col))
+    qaqc_out_obj.upload_file(qaqc_zip_file)
   end
+  File.delete(qaqc_col) if File.exist?(qaqc_col)
+  File.delete(qaqc_zip_file) if File.exist?(qaqc_zip_file)
 end
