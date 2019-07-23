@@ -295,7 +295,7 @@ else
   error_out_id = analysis_id + "/" + "error_col.json"
   error_out_obj = bucket.object(error_out_id)
   while error_out_obj.exists? == false
-    error_out_obj.put(JSON.pretty_generate(error_temp_col))
+    error_out_obj.put(JSON.pretty_generate(error_col))
   end
 end
 
