@@ -213,8 +213,6 @@ def process_simulation_json(json:, uuid:, aid:, osw_file:)
 end
 
 def unzip_osw(zip_file:)
-  dest_file = './test_zip_out.json'
-  dest_file_mod = './test_zip_out2.json'
   osw_json = []
   Zip::File.open(zip_file) do |file|
     file.each do |entry|
@@ -309,7 +307,6 @@ if qaqc_col.empty?
   log_obj = bucket.object("log/" + file_id)
   log_obj.upload_file(log_file_loc)
 else
-  File.open(qaqc_temp_col,"w") {|each_file| each_file.write(JSON.pretty_generate(qaqc_col))}
   qaqc_out_id = analysis_id + "/" + "simulations.json"
   qaqc_out_obj = bucket.object(qaqc_out_id)
   while qaqc_out_obj.exists? == false
