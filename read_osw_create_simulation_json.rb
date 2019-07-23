@@ -212,7 +212,7 @@ def process_simulation_json(json:, uuid:, aid:, osw_file:)
   return json, error_return
 end
 
-def unzip_test(zip_file:)
+def unzip_osw(zip_file:)
   dest_file = './test_zip_out.json'
   dest_file_mod = './test_zip_out2.json'
   osw_json = []
@@ -236,11 +236,7 @@ time_obj = Time.new
 curr_time = time_obj.year.to_s + "-" + time_obj.month.to_s + "-" + time_obj.day.to_s + "_" + time_obj.hour.to_s + ":" + time_obj.min.to_s + ":" + time_obj.sec.to_s + ":" + time_obj.usec.to_s
 
 osw_temp_file = './osw_temp.json'
-error_temp_col = './error_col.json'
 error_col = []
-
-qaqc_temp_file = './qaqc_temp.json'
-qaqc_temp_col = './qaqc_col.json'
 qaqc_col = []
 
 #Go through all of the objects in the s3 bucket searching for the qaqc.json and error.json objects related the current
@@ -249,58 +245,66 @@ bucket.objects.each do |bucket_info|
   unless (/#{analysis_id}/ =~ bucket_info.key.to_s).nil?
     #Remove the / characters with _ to avoid regex problems
     replacekey = bucket_info.key.to_s.gsub(/\//, '_')
-    #Search for objects with the current analysis id that have .zip in them, then extract the qaqc data and collate
-    #those into simulations.json and error.json files and put them in the s3 bucket.
+    #Search for objects with the current analysis id that have .zip in them, then extract the qaqc and error data
+    #and collate those into a qaqc_col array of hashes and an error col array of hashes.  Ultimately thes end up in an
+    #s3 bucket on aws.
     unless (/.zip/ =~ replacekey.to_s).nil?
-      #If you find a datapoint error file try downloading it and adding the information to the error_col array of hashes.
+      #If you find an osw.zip file try downloading it and adding the information to the error_col array of hashes.
       osw_index = 0
       while osw_index < 10
         osw_index += 1
         bucket_info.download_file(osw_temp_file)
-        error_index = 11 if File.exist?(osw_temp_file)
+        osw_index = 11 if File.exist?(osw_temp_file)
       end
       if File.exist?(osw_temp_file)
-        unzip_test(zip_file: osw_temp_file)
-        error_json = JSON.parse(File.read(error_temp_file))
-        error_json.each do |error_out|
-          error_col << error_out
+        osw_json = unzip_osw(zip_file: osw_temp_file)
+        osw_json.each do |osw|
+          aid = osw['osa_id']
+          uuid = osw['osd_id']
+          if aid.nil? || uuid.nil?
+            puts "Error either aid: #{aid} or uuid: #{uuid} not present"
+          else
+            qaqc, error_info = extract_data_from_osw(osw_json: osw, uuid: uuid, aid: aid)
+            qaqc.each do |qaqc_ind|
+              qaqc_col << qaqc_ind
+            end
+            error_info.each do |error_ind|
+              error_col << error_ind
+            end
+          end
         end
-        # Get rid of the datapoint error.json file that was just downloaded.
-        File.delete(error_temp_file)
+        # Get rid of the datapoint osw file that was just downloaded.
+        File.delete(osw_temp_file)
       else
         puts "Could not download #{bucket_info.key}"
       end
     end
   end
 end
-#Generated a collated error.json file using the collated array of datapoint error hashes.
-#Create an s3 object and push the collated error.json file to it.
+
+#Put the collated array of datapoint error hashes into a error_col.json file on s3.
 if error_col.empty?
   file_id = "error_coll_log_" + curr_time
   log_file_loc = "./" + file_id + ".txt"
   log_file = File.open(log_file_loc, 'w')
-  log_file.puts "#{error_temp_col} could not be found."
+  log_file.puts "No error data could be found."
   log_file.close
   log_obj = bucket.object("log/" + file_id)
   log_obj.upload_file(log_file_loc)
 else
-  File.open(error_temp_col,"w") {|each_file| each_file.write(JSON.pretty_generate(error_col))}
   error_out_id = analysis_id + "/" + "error_col.json"
   error_out_obj = bucket.object(error_out_id)
   while error_out_obj.exists? == false
-    error_out_obj.upload_file(error_temp_col)
+    error_out_obj.put(JSON.pretty_generate(error_temp_col))
   end
-  #Delete the collated error.json file.
-  File.delete(error_temp_col)
 end
 
-#Generated a collated qaqc.json file using the collated array of datapoint qaqc hashes.
-#Create an s3 object and push the collated qaqc.json file to it (this makes the simulations.json for the analysis).
+#Put the collated array of datapoint qaqc hashes into a simulation.json file on s3.
 if qaqc_col.empty?
   file_id = "qaqc_coll_log_" + curr_time
   log_file_loc = "./" + file_id + ".txt"
   log_file = File.open(log_file_loc, 'w')
-  log_file.puts "#{qaqc_temp_col} could not be found."
+  log_file.puts "No qaqc data could be found."
   log_file.close
   log_obj = bucket.object("log/" + file_id)
   log_obj.upload_file(log_file_loc)
@@ -309,8 +313,6 @@ else
   qaqc_out_id = analysis_id + "/" + "simulations.json"
   qaqc_out_obj = bucket.object(qaqc_out_id)
   while qaqc_out_obj.exists? == false
-    qaqc_out_obj.upload_file(qaqc_temp_col)
+    qaqc_out_obj.put(JSON.pretty_generate(qaqc_col))
   end
-  #Delete the collated qaqc.json file.
-  File.delete(qaqc_temp_col)
 end
