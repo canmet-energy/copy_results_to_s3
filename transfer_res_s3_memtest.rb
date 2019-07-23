@@ -61,7 +61,7 @@ if File.file?(out_file)
     else
       #If an osa_id and osw_id exist then assume the osw is good and put it in the s3 bucket with the name
       #'osa_id/osd_id.osw'.
-      osw_json = JSON.parse(File.read(out_file)).to_s
+      osw_json = JSON.pretty_generate(JSON.parse(File.read(out_file)))
       file_id = osa_id + "/" + osd_id + ".osw"
       out_obj = bucket.object(file_id)
       while out_obj.exists? == false
