@@ -42,7 +42,7 @@ iam_policy = input_args[2].to_s
 region = 'us-east-1'
 bucket_name = 'btapresultsbucket'
 
-sts = Aws::STS::Client.new(region)
+sts = Aws::STS::Client.new(region: region)
 creds = sts.get_federation_token({
     duration_seconds: 3600,
     name: user_accnt,
