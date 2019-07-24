@@ -12,9 +12,9 @@ end
 require 'bundler'
 require 'securerandom'
 require 'aws-sdk-s3'
+require 'aws-sdk-iam'
 require 'json'
 require 'zip'
-require 'aws-sdk-iam'
 
 # Source copied and modified from https://github.com/rubyzip/rubyzip
 # creates a zip of the given file and places the zipped file at the
