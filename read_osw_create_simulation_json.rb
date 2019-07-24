@@ -321,7 +321,7 @@ else
   while error_out_obj.exists? == false
     error_out_obj.upload_file(error_zip_file)
   end
-  File.delete(error_col) if File.exist?(error_col)
+  File.delete(error_temp_col) if File.exist?(error_temp_col)
   File.delete(error_zip_file) if File.exist?(error_zip_file)
 end
 
@@ -342,6 +342,6 @@ else
   while qaqc_out_obj.exists? == false
     qaqc_out_obj.upload_file(qaqc_zip_file)
   end
-  File.delete(qaqc_col) if File.exist?(qaqc_col)
+  File.delete(qaqc_temp_col) if File.exist?(qaqc_temp_col)
   File.delete(qaqc_zip_file) if File.exist?(qaqc_zip_file)
 end
