@@ -41,7 +41,7 @@ def invoke_lambda(osa_id:, osd_id:, file_id:)
   resp = client.invoke({
       function_name: 'extract_append_qaqc_error',
       invocation_type: 'Event',
-      log_type: 'None',
+      log_type: 'Tail',
       payload: payload
                        })
   return resp
