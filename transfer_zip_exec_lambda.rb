@@ -36,7 +36,8 @@ end
 def invoke_lambda(osa_id:, osd_id:, file_id:)
   region = 'us-east-1'
   client = Aws::Lambda::Client.new(region: region)
-  req_payload = {:analysis_id => osa_id, :datapoint_id => osd_id, :file_id => file_id}
+  analysis_json = JSON.parse(RestClient.get("http://web:80/analyses/#{osa_id}.json", headers={}))
+  req_payload = {:analysis_id => osa_id, :datapoint_id => osd_id, :file_id => file_id, :analysis_json => analysis_json}
   payload = JSON.generate(req_payload)
   resp = client.invoke({
       function_name: 'extract_append_qaqc_error',
