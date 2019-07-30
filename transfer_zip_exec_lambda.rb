@@ -33,6 +33,20 @@ def zip_results(in_file:, out_file_name:)
   return zipfile_name
 end
 
+def invoke_lambda(osa_id:, osd_id:, file_id:)
+  region = 'us-east-1'
+  client = Aws::Lambda::Client.new(region: region)
+  req_payload = {:analysis_id => osa_id, :datapoint_id => osd_id, :file_id => file_id}
+  payload = JSON.generate(req_payload)
+  resp = client.invoke({
+      function_name: 'extract_append_qaqc_error',
+      invocation_type: 'Event',
+      log_type: 'None',
+      payload: payload
+                       })
+  return resp
+end
+
 #Get datapoint directory passed from worker finalization script.
 out_dir = ARGV[0].to_s
 
@@ -88,6 +102,7 @@ if File.file?(out_file)
         out_obj.upload_file(zip_file_loc)
       end
       File.delete(zip_file_loc) if File.exist?(zip_file_loc)
+      lambda_resp = invoke_lambda(osa_id: osa_id, osd_id: osd_id, file_id: file_id)
     end
   end
 else
