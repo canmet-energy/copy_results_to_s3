@@ -1,1 +1,3 @@
 # copy_results_to_s3
+
+This repository contains a collection of ruby scripts which the Building Technology Assessment Platform uses with the National Renewable Energy Laboratory's (NREL) Parametric Analysis Tool (PAT) when running an analysis using openstudio-server on Amazon Web Services (AWS).  These ruby scripts generally take results from a PAT analysis, extract relevant information, and then put that information into an AWS S3 bucket.  They are intended to be used with server scripts used with openstudio-server.
