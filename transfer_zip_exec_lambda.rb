@@ -45,7 +45,7 @@ def invoke_lambda(osa_id:, osd_id:, file_id:)
     }
   else
     analysis_json = {
-        analysis_id: analysis_info['analysis_id']['_id'],
+        analysis_id: analysis_info['analysis']['_id'],
         analysis_name: analysis_info['analysis']['display_name']
     }
   end
