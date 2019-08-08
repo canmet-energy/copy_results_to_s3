@@ -40,19 +40,19 @@ def invoke_lambda(osa_id:, osd_id:, file_id:)
   analysis_info = JSON.parse(RestClient.get("http://web:80/analyses/#{osa_id}.json", headers={}))
   if analysis_info.nil?
     analysis_json = {
-        analysis_id: osa_id,
-        analysis_name: 'no_name'
+        'analysis_id' => osa_id,
+        'analysis_name' => 'no_name'
     }
   else
     analysis_json = {
-        analysis_id: analysis_info['analysis']['_id'],
-        analysis_name: analysis_info['analysis']['display_name']
+        'analysis_id' => analysis_info['analysis']['_id'],
+        'analysis_name' => analysis_info['analysis']['display_name']
     }
   end
   req_payload = {:analysis_id => osa_id, :datapoint_id => osd_id, :file_id => file_id, :analysis_json => analysis_json}
   payload = JSON.generate(req_payload)
   resp = client.invoke({
-      function_name: 'extract_append_qaqc_error',
+      function_name: 'extract_osw_append',
       invocation_type: 'Event',
       log_type: 'Tail',
       payload: payload
