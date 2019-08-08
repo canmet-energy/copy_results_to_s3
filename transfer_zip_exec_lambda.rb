@@ -57,7 +57,8 @@ def invoke_lambda(osa_id:, osd_id:, file_id:)
       log_type: 'Tail',
       payload: payload
                        })
-  out_info = JSON.parse(resp[:body].string)
+  puts resp
+  out_info = JSON.parse(resp[:payload].string)
   puts out_info
   return resp
 end
