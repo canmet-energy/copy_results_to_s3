@@ -57,6 +57,7 @@ def invoke_lambda(osa_id:, osd_id:, file_id:)
       log_type: 'Tail',
       payload: payload
                        })
+  puts resp
   return resp
 end
 
