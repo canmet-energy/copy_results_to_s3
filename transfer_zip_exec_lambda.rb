@@ -57,7 +57,7 @@ def invoke_lambda(osa_id:, osd_id:, file_id:)
       log_type: 'Tail',
       payload: payload
                        })
-  out_info = JSON.parse(s3_cli.get_object(bucket: bucket_name, key: file_id)[:body].string)
+  out_info = JSON.parse(resp[:body].string)
   puts out_info
   return resp
 end
