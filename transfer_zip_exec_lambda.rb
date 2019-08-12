@@ -49,40 +49,19 @@ def invoke_lambda(osa_id:, osd_id:, file_id:)
         'analysis_name' => analysis_info['analysis']['display_name']
     }
   end
-  #req_payload = {
-  #    analysis_id: osa_id,
-  #    datapoint_id: osd_id,
-  #    file_id: file_id,
-  #    analysis_json: analysis_json
-  #}
   req_payload = {
-      'osa_id' => osa_id,
-      'osd_id' => osd_id,
-      'file_id' => file_id,
-      'analysis_json' => analysis_json
+      osa_id: osa_id,
+      osd_id: osd_id,
+      file_id: file_id,
+      analysis_json: analysis_json
   }
-  #req_payload = {:analysis_id => osa_id, :datapoint_id => osd_id, :file_id => file_id, :analysis_json => analysis_json}
   payload = JSON.generate(req_payload)
-  puts 'Payload Sent:'
-  puts payload
   resp = client.invoke({
       function_name: 'extract_osw_append',
-      invocation_type: 'RequestResponse',
+      invocation_type: 'Event',
       log_type: 'Tail',
       payload: payload
                        })
-  puts 'Raw Output:'
-  puts resp
-  puts 'Raw Payload Hash:'
-  puts resp[:payload]
-  puts 'Payload Hash to String:'
-  puts resp[:payload].string
-  puts 'Status code:'
-  puts resp["status_code"]
-  puts 'Parsed Payload Hash:'
-  puts JSON.parse(resp.payload.string)
-  #out_info = JSON.parse(resp[:payload].string)
-  #puts out_info
   return resp
 end
 
