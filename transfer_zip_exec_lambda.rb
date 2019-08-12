@@ -67,7 +67,7 @@ def invoke_lambda(osa_id:, osd_id:, file_id:)
   puts payload
   resp = client.invoke({
       function_name: 'extract_osw_append',
-      invocation_type: 'Event',
+      invocation_type: 'RequestResponse',
       log_type: 'Tail',
       payload: payload
                        })
