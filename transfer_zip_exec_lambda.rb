@@ -78,7 +78,7 @@ def invoke_lambda(osa_id:, osd_id:, file_id:)
   puts 'Payload Hash to String:'
   puts resp[:payload].string
   puts 'Status code:'
-  puts resp["statusCode"]
+  puts resp["status_code"]
   puts 'Parsed Payload Hash:'
   puts JSON.parse(resp.payload.string)
   #out_info = JSON.parse(resp[:payload].string)
