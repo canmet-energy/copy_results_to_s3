@@ -63,8 +63,13 @@ def invoke_lambda(osa_id:, osd_id:, file_id:)
       log_type: 'Tail',
       payload: payload
                        })
+  puts 'Raw Output:'
   puts resp
+  puts 'Raw Payload Hash:'
+  puts resp[:payload]
+  puts 'Payload Hash to String:'
   puts resp[:payload].string
+  puts 'Parsed Payload Hash:'
   out_info = JSON.parse(resp[:payload].string)
   puts out_info
   return resp
