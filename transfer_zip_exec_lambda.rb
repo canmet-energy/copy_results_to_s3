@@ -49,11 +49,17 @@ def invoke_lambda(osa_id:, osd_id:, file_id:)
         'analysis_name' => analysis_info['analysis']['display_name']
     }
   end
+  #req_payload = {
+  #    analysis_id: osa_id,
+  #    datapoint_id: osd_id,
+  #    file_id: file_id,
+  #    analysis_json: analysis_json
+  #}
   req_payload = {
-      analysis_id: osa_id,
-      datapoint_id: osd_id,
-      file_id: file_id,
-      analysis_json: analysis_json
+      'analysis_id' => osa_id,
+      'datapoint_id' => osd_id,
+      'file_id' => file_id,
+      'analysis_json' => analysis_json
   }
   #req_payload = {:analysis_id => osa_id, :datapoint_id => osd_id, :file_id => file_id, :analysis_json => analysis_json}
   payload = JSON.generate(req_payload)
