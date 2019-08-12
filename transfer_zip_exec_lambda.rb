@@ -56,8 +56,8 @@ def invoke_lambda(osa_id:, osd_id:, file_id:)
   #    analysis_json: analysis_json
   #}
   req_payload = {
-      'analysis_id' => osa_id,
-      'datapoint_id' => osd_id,
+      'osa_id' => osa_id,
+      'osd_id' => osd_id,
       'file_id' => file_id,
       'analysis_json' => analysis_json
   }
