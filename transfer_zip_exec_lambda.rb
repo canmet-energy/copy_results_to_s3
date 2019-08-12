@@ -57,6 +57,8 @@ def invoke_lambda(osa_id:, osd_id:, file_id:)
   }
   #req_payload = {:analysis_id => osa_id, :datapoint_id => osd_id, :file_id => file_id, :analysis_json => analysis_json}
   payload = JSON.generate(req_payload)
+  puts 'Payload Sent:'
+  puts payload
   resp = client.invoke({
       function_name: 'extract_osw_append',
       invocation_type: 'Event',
