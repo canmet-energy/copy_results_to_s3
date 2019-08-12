@@ -64,7 +64,7 @@ def invoke_lambda(osa_id:, osd_id:, file_id:)
       payload: payload
                        })
   puts resp
-  puts resp[:payload]
+  puts resp[:payload].string
   out_info = JSON.parse(resp[:payload].string)
   puts out_info
   return resp
