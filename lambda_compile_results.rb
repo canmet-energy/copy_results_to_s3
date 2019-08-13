@@ -15,23 +15,24 @@ require 'aws-sdk-lambda'
 require 'json'
 require 'rest-client'
 
-def invoke_lambda(osa_id:)
+def invoke_lambda(osa_id:, bucket_name:)
   region = 'us-east-1'
   client = Aws::Lambda::Client.new(region: region)
   analysis_info = JSON.parse(RestClient.get("http://web:80/analyses/#{osa_id}.json", headers={}))
   if analysis_info.nil?
     analysis_json = {
-        'analysis_id' => osa_id,
-        'analysis_name' => 'no_name'
+        analysis_id: osa_id,
+        analysis_name: 'no_name'
     }
   else
     analysis_json = {
-        'analysis_id' => analysis_info['analysis']['_id'],
-        'analysis_name' => analysis_info['analysis']['display_name']
+        analysis_id: analysis_info['analysis']['_id'],
+        analysis_name: analysis_info['analysis']['display_name']
     }
   end
   req_payload = {
       osa_id: osa_id,
+      bucket_name: bucket_name,
       analysis_json: analysis_json
   }
   payload = JSON.generate(req_payload)
@@ -47,7 +48,9 @@ def invoke_lambda(osa_id:)
 end
 
 #Get the analysis_id from the server finalization script.
-analysis_id = ARGV[0].to_s
+input_arguments = ARGV
+analysis_id = input_arguments[0].to_s
+bucket_name = input_arguments[1].to_s
 
 #Set up s3.
 region = 'us-east-1'
@@ -65,7 +68,7 @@ curr_time = time_obj.year.to_s + "-" + time_obj.month.to_s + "-" + time_obj.day.
 #just at the end.
 out_obj = bucket.object(analysis_id)
 if out_obj.exist?
-  lambda_resp = invoke_lambda(osa_id: analysis_id)
+  lambda_resp = invoke_lambda(osa_id: analysis_id, bucket_name: bucket_name)
 else
   file_id = "error_coll_log_" + curr_time
   log_file_contents = "No analysis data could be found."
