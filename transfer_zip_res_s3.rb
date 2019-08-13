@@ -33,12 +33,13 @@ def zip_results(in_file:, out_file_name:)
 end
 
 #Get datapoint directory passed from worker finalization script.
-out_dir = ARGV[0].to_s
+input_arguments = ARGV
+out_dir = input_arguments[0].to_s
+bucket_name = input_arguments[1].to_s
 
 #Set up s3.
 region = 'us-east-1'
 s3 = Aws::S3::Resource.new(region: region)
-bucket_name = 'btapresultsbucket'
 bucket = s3.bucket(bucket_name)
 
 #Get current time and date (to use in logs)
