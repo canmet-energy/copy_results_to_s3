@@ -58,10 +58,12 @@ def invoke_lambda(osa_id:, osd_id:, file_id:)
   payload = JSON.generate(req_payload)
   resp = client.invoke({
       function_name: 'extract_osw_append',
-      invocation_type: 'Event',
+      invocation_type: 'RequestResponse',
       log_type: 'Tail',
       payload: payload
                        })
+  puts "Lambda function response:"
+  puts JSON.parse(resp.payload.string)
   return resp
 end
 
