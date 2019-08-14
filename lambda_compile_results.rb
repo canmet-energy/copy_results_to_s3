@@ -15,7 +15,7 @@ require 'aws-sdk-lambda'
 require 'json'
 require 'rest-client'
 
-def invoke_lambda(osa_id:, bucket_name:)
+def invoke_lambda(osa_id:, bucket_name:, object_keys:)
   region = 'us-east-1'
   client = Aws::Lambda::Client.new(region: region)
   analysis_info = JSON.parse(RestClient.get("http://web:80/analyses/#{osa_id}.json", headers={}))
@@ -30,20 +30,31 @@ def invoke_lambda(osa_id:, bucket_name:)
         analysis_name: analysis_info['analysis']['display_name']
     }
   end
-  req_payload = {
-      osa_id: osa_id,
-      bucket_name: bucket_name,
-      analysis_json: analysis_json
-  }
-  payload = JSON.generate(req_payload)
-  resp = client.invoke({
-      function_name: 'compile_BTAP_results',
-      invocation_type: 'RequestResponse',
-      log_type: 'Tail',
-      payload: payload
-                       })
-  puts "Lambda function response:"
-  puts JSON.parse(resp.payload.string)
+  resp_col = []
+  cycles = (object_keys.size/1000.0)
+  for cycle_count in 0..cycles.to_i
+    count_left = cycles - cycle_count
+    sub_start = cycle_count*1000
+    count_left >= 1 ? sub_end = sub_start + 999 : sub_end = sub_start + (count_left*1000.0).round(0) - 1
+    object_subkeys = object_keys[sub_start..sub_end]
+    req_payload = {
+        osa_id: osa_id,
+        bucket_name: bucket_name,
+        object_keys: object_subkeys,
+        cycle_count: cycle_count,
+        analysis_json: analysis_json
+    }
+    payload = JSON.generate(req_payload)
+    resp = client.invoke({
+                             function_name: 'compile_sub_BTAP_results',
+                             invocation_type: 'RequestResponse',
+                             log_type: 'Tail',
+                             payload: payload
+                         })
+    puts "Lambda function response:"
+    puts JSON.parse(resp.payload.string)
+    resp_col << resp
+  end
   return resp
 end
 
@@ -92,5 +103,5 @@ if analysis_objects.empty?
   log_obj = bucket.object("log/" + file_id)
   log_obj.put(body: log_file_contents)
 else
-  lambda_resp = invoke_lambda(osa_id: analysis_id, bucket_name: bucket_name)
+  lambda_resp = invoke_lambda(osa_id: analysis_id, bucket_name: bucket_name, object_keys: analysis_objects)
 end
