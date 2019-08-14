@@ -47,16 +47,32 @@ def invoke_lambda(osa_id:, bucket_name:)
   return resp
 end
 
+# This calls a lambda function which collects the names of all of the objects in an s3 bucket with the analysis_id in
+# the name and that have .zip at the end.
+def get_analysis_objects(osa_id:, bucket_name:)
+  region = 'us-east-1'
+  client = Aws::Lambda::Client.new(region: region)
+  req_payload = {
+      osa_id: osa_id,
+      bucket_name: bucket_name
+  }
+  payload = JSON.generate(req_payload)
+  resp = client.invoke({
+                           function_name: 'get_analysis_object_names',
+                           invocation_type: 'RequestResponse',
+                           log_type: 'Tail',
+                           payload: payload
+                       })
+  puts "Lambda function response:"
+  puts JSON.parse(resp.payload.string)
+  ret_objects = JSON.parse(resp.payload.string)
+  return resp
+end
+
 #Get the analysis_id from the server finalization script.
 input_arguments = ARGV
 analysis_id = input_arguments[0].to_s
 bucket_name = input_arguments[1].to_s
-
-#Set up s3.
-region = 'us-east-1'
-s3 = Aws::S3::Resource.new(region: region)
-bucket_name = 'btapresultsbucket'
-bucket = s3.bucket(bucket_name)
 
 #Get current time and date (to use in logs)
 time_obj = Time.new
@@ -66,6 +82,7 @@ curr_time = time_obj.year.to_s + "-" + time_obj.month.to_s + "-" + time_obj.day.
 #lambda function.  Otherwise put an error log up saying that the analysis has not started.  This check is required
 #because OpenStudio_server 2.8.1 run the server finalization script at the start and end of the analysis rather than
 #just at the end.
+analysis_objects = get_analysis_objects(osa_id: analysis_id, bucket_name: bucket_name)
 out_obj = bucket.object(analysis_id)
 if out_obj.exist?
   lambda_resp = invoke_lambda(osa_id: analysis_id, bucket_name: bucket_name)
