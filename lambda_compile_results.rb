@@ -64,9 +64,9 @@ def get_analysis_objects(osa_id:, bucket_name:)
                            payload: payload
                        })
   puts "Lambda function response:"
-  puts JSON.parse(resp.payload.string)
   ret_objects = JSON.parse(resp.payload.string)
-  return resp
+  puts ret_objects
+  return ret_objects
 end
 
 #Get the analysis_id from the server finalization script.
@@ -83,12 +83,14 @@ curr_time = time_obj.year.to_s + "-" + time_obj.month.to_s + "-" + time_obj.day.
 #because OpenStudio_server 2.8.1 run the server finalization script at the start and end of the analysis rather than
 #just at the end.
 analysis_objects = get_analysis_objects(osa_id: analysis_id, bucket_name: bucket_name)
-out_obj = bucket.object(analysis_id)
-if out_obj.exist?
-  lambda_resp = invoke_lambda(osa_id: analysis_id, bucket_name: bucket_name)
-else
+if analysis_objects.empty?
+  region = 'us-east-1'
+  s3 = Aws::S3::Resource.new(region: region)
+  bucket = s3.bucket(bucket_name)
   file_id = "error_coll_log_" + curr_time
   log_file_contents = "No analysis data could be found."
   log_obj = bucket.object("log/" + file_id)
   log_obj.put(body: log_file_contents)
+else
+  lambda_resp = invoke_lambda(osa_id: analysis_id, bucket_name: bucket_name)
 end
