@@ -42,7 +42,7 @@ def invoke_lambda(osa_id:, bucket_name:, object_keys:)
     puts "Object keys passed to compile_sub_BTAP_results lambda function:"
     puts object_subkeys
     puts "object_subkeys size:"
-    puts object_subkeys
+    puts object_subkeys.size
     req_payload = {
         osa_id: osa_id,
         bucket_name: bucket_name,
