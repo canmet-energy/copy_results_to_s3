@@ -100,8 +100,7 @@ curr_time = time_obj.year.to_s + "-" + time_obj.month.to_s + "-" + time_obj.day.
 #because OpenStudio_server 2.8.1 run the server finalization script at the start and end of the analysis rather than
 #just at the end.
 analysis_objects = get_analysis_objects(osa_id: analysis_id, bucket_name: bucket_name)
-object_keys = analysis_objects["body"]
-test = JSON.parse(object_keys)
+object_keys = JSON.parse(analysis_objects["body"])
 puts test
 if object_keys.empty?
   region = 'us-east-1'
