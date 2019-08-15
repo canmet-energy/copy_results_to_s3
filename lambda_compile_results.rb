@@ -16,6 +16,8 @@ require 'json'
 require 'rest-client'
 
 def invoke_lambda(osa_id:, bucket_name:, object_keys:)
+  puts 'Object keys passed to invoke_lambda method:'
+  puts object_keys
   region = 'us-east-1'
   client = Aws::Lambda::Client.new(region: region)
   analysis_info = JSON.parse(RestClient.get("http://web:80/analyses/#{osa_id}.json", headers={}))
@@ -37,6 +39,8 @@ def invoke_lambda(osa_id:, bucket_name:, object_keys:)
     sub_start = cycle_count*1000
     count_left >= 1 ? sub_end = sub_start + 999 : sub_end = sub_start + (count_left*1000.0).round(0) - 1
     object_subkeys = object_keys[sub_start..sub_end]
+    puts "Object keys passed to compile_sub_BTAP_results lambda function:"
+    puts object_subkeys
     req_payload = {
         osa_id: osa_id,
         bucket_name: bucket_name,
