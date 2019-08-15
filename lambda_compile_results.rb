@@ -101,7 +101,6 @@ curr_time = time_obj.year.to_s + "-" + time_obj.month.to_s + "-" + time_obj.day.
 #just at the end.
 analysis_objects = get_analysis_objects(osa_id: analysis_id, bucket_name: bucket_name)
 object_keys = JSON.parse(analysis_objects["body"])
-puts test
 if object_keys.empty?
   region = 'us-east-1'
   s3 = Aws::S3::Resource.new(region: region)
