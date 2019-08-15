@@ -98,6 +98,7 @@ curr_time = time_obj.year.to_s + "-" + time_obj.month.to_s + "-" + time_obj.day.
 #because OpenStudio_server 2.8.1 run the server finalization script at the start and end of the analysis rather than
 #just at the end.
 analysis_objects = get_analysis_objects(osa_id: analysis_id, bucket_name: bucket_name)
+object_keys = analysis_objects["body"]
 if analysis_objects.empty?
   region = 'us-east-1'
   s3 = Aws::S3::Resource.new(region: region)
@@ -107,5 +108,5 @@ if analysis_objects.empty?
   log_obj = bucket.object("log/" + file_id)
   log_obj.put(body: log_file_contents)
 else
-  lambda_resp = invoke_lambda(osa_id: analysis_id, bucket_name: bucket_name, object_keys: analysis_objects)
+  lambda_resp = invoke_lambda(osa_id: analysis_id, bucket_name: bucket_name, object_keys: object_keys)
 end
