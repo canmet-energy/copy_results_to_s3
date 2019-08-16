@@ -7,6 +7,324 @@
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="jdk" jdkName="ruby-2.2.4-p230" jdkType="RUBY_SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library">
+      <library name="aws-eventstream (vbundled(1.0.3)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="3" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/aws-eventstream-1.0.3/lib" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/aws-eventstream-1.0.3/lib" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="aws-partitions (vbundled(1.190.0)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="3" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/aws-partitions-1.190.0/lib" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/aws-partitions-1.190.0/lib" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="aws-sdk-core (vbundled(3.59.0)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="3" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/aws-sdk-core-3.59.0/lib" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/aws-sdk-core-3.59.0/lib" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="aws-sdk-kms (vbundled(1.23.0)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="3" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/aws-sdk-kms-1.23.0/lib" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/aws-sdk-kms-1.23.0/lib" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="aws-sdk-s3 (vbundled(1.45.0)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="3" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/aws-sdk-s3-1.45.0/lib" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/aws-sdk-s3-1.45.0/lib" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="aws-sigv4 (vbundled(1.1.0)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="3" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/aws-sigv4-1.1.0/lib" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/aws-sigv4-1.1.0/lib" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="colored (vbundled(1.2)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="3" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/colored-1.2/lib" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/colored-1.2/test" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/colored-1.2/lib" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/colored-1.2/test" />
+        </SOURCES>
+        <excluded>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/colored-1.2/test" />
+        </excluded>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="domain_name (vbundled(0.5.20190701)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="3" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/domain_name-0.5.20190701/lib" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/domain_name-0.5.20190701/data" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/domain_name-0.5.20190701/test" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/domain_name-0.5.20190701/tool" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/domain_name-0.5.20190701/lib" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/domain_name-0.5.20190701/data" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/domain_name-0.5.20190701/test" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/domain_name-0.5.20190701/tool" />
+        </SOURCES>
+        <excluded>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/domain_name-0.5.20190701/data" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/domain_name-0.5.20190701/test" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/domain_name-0.5.20190701/tool" />
+        </excluded>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="http-cookie (vbundled(1.0.3)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="3" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/http-cookie-1.0.3/lib" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/http-cookie-1.0.3/test" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/http-cookie-1.0.3/lib" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/http-cookie-1.0.3/test" />
+        </SOURCES>
+        <excluded>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/http-cookie-1.0.3/test" />
+        </excluded>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="jmespath (vbundled(1.4.0)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="3" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/jmespath-1.4.0/lib" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/jmespath-1.4.0/lib" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="mime-types (vbundled(3.2.2)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="3" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/mime-types-3.2.2/lib" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/mime-types-3.2.2/test" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/mime-types-3.2.2/lib" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/mime-types-3.2.2/test" />
+        </SOURCES>
+        <excluded>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/mime-types-3.2.2/test" />
+        </excluded>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="mime-types-data (vbundled(3.2019.0331)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="3" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/mime-types-data-3.2019.0331/lib" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/mime-types-data-3.2019.0331/data" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/mime-types-data-3.2019.0331/types" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/mime-types-data-3.2019.0331/lib" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/mime-types-data-3.2019.0331/data" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/mime-types-data-3.2019.0331/types" />
+        </SOURCES>
+        <excluded>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/mime-types-data-3.2019.0331/data" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/mime-types-data-3.2019.0331/types" />
+        </excluded>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="netrc (vbundled(0.11.0)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="3" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/netrc-0.11.0/lib" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/netrc-0.11.0/data" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/netrc-0.11.0/test" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/netrc-0.11.0/lib" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/netrc-0.11.0/data" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/netrc-0.11.0/test" />
+        </SOURCES>
+        <excluded>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/netrc-0.11.0/data" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/netrc-0.11.0/test" />
+        </excluded>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="parallel (vbundled(1.17.0)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="3" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/parallel-1.17.0/lib" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/parallel-1.17.0/lib" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="rest-client (vbundled(2.0.2)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="3" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/rest-client-2.0.2/bin" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/rest-client-2.0.2/lib" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/rest-client-2.0.2/spec" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/rest-client-2.0.2/bin" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/rest-client-2.0.2/lib" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/rest-client-2.0.2/spec" />
+        </SOURCES>
+        <excluded>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/rest-client-2.0.2/bin" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/rest-client-2.0.2/spec" />
+        </excluded>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="rubyzip (vbundled(1.2.3)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="3" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/rubyzip-1.2.3/lib" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/rubyzip-1.2.3/test" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/rubyzip-1.2.3/samples" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/rubyzip-1.2.3/lib" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/rubyzip-1.2.3/test" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/rubyzip-1.2.3/samples" />
+        </SOURCES>
+        <excluded>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/rubyzip-1.2.3/test" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/rubyzip-1.2.3/samples" />
+        </excluded>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="unf (vbundled(0.1.4)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="3" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/unf-0.1.4/lib" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/unf-0.1.4/test" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/unf-0.1.4/lib" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/unf-0.1.4/test" />
+        </SOURCES>
+        <excluded>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/unf-0.1.4/test" />
+        </excluded>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="unf_ext (vbundled(0.0.7.6)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="3" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/unf_ext-0.0.7.6/ext" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/unf_ext-0.0.7.6/lib" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/unf_ext-0.0.7.6/test" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/unf_ext-0.0.7.6/ext" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/unf_ext-0.0.7.6/lib" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/unf_ext-0.0.7.6/test" />
+        </SOURCES>
+        <excluded>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/unf_ext-0.0.7.6/ext" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/unf_ext-0.0.7.6/test" />
+        </excluded>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="zip-zip (vbundled(0.3)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="3" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/zip-zip-0.3/lib" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.2.0/gems/zip-zip-0.3/lib" />
+        </SOURCES>
+      </library>
+    </orderEntry>
     <orderEntry type="library" scope="PROVIDED" name="bundler (v1.17.1, ruby-2.2.4-p230) [gem]" level="application" />
   </component>
 </module>
