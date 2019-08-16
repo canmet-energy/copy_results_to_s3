@@ -33,11 +33,12 @@ def invoke_lambda(osa_id:, bucket_name:, object_keys:)
     }
   end
   resp_col = []
-  cycles = (object_keys.size/1000.0)
+  block_size = 500.0
+  cycles = (object_keys.size/block_size)
   for cycle_count in 0..cycles.to_i
     count_left = cycles - cycle_count
-    sub_start = cycle_count*1000
-    count_left >= 1 ? sub_end = sub_start + 999 : sub_end = sub_start + (count_left*1000.0).round(0) - 1
+    sub_start = (cycle_count*block_size).round(0)
+    count_left >= 1 ? sub_end = sub_start + (block_size.to_i - 1) : sub_end = sub_start + (count_left*block_size).round(0) - 1
     object_subkeys = object_keys[sub_start..sub_end]
     puts "Object keys passed to compile_sub_BTAP_results lambda function:"
     puts object_subkeys
