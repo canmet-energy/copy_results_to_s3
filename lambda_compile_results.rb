@@ -57,7 +57,7 @@ def invoke_lambda(osa_id:, bucket_name:, object_keys:)
                              log_type: 'Tail',
                              payload: payload
                          })
-    puts "Lambda function response:"
+    puts "Compile sub BTAP results lambda function response:"
     puts JSON.parse(resp.payload.string)
     resp_col << resp
   end
@@ -80,7 +80,7 @@ def get_analysis_objects(osa_id:, bucket_name:)
                            log_type: 'Tail',
                            payload: payload
                        })
-  puts "Lambda function response:"
+  puts "Get analysis objects lambda function response:"
   ret_objects = JSON.parse(resp.payload.string)
   puts ret_objects
   return ret_objects
@@ -102,7 +102,7 @@ def col_res(osa_id:, bucket_name:, cycles:, file_pref:)
                            log_type: 'Tail',
                            payload: payload
                        })
-  puts "Lambda function response:"
+  puts "Ammend BTAP results lambda function response:"
   ret_objects = JSON.parse(resp.payload.string)
   puts ret_objects
   return ret_objects
