@@ -138,17 +138,17 @@ else
   # error_col_#.json and simulations_#.json files in sets of 1000.  Once successfully completed another lambda
   # function is called which collates the error_col_#.json and simulations_#.json files into master error_col.json
   # and simulations.json files.
-  cycles = 0
   col_lambda_resp, cycles = invoke_lambda(osa_id: analysis_id, bucket_name: bucket_name, object_keys: object_keys)
   #Need to fix this so it actually checks for a response.
-  if col_lambda_resp.empty? || col_lambda_resp[0].nil? || cycles == 0 || cycles.nil?
+  if col_lambda_resp.empty? || col_lambda_resp[0].nil? || cycles.nil?
     "There was an error in the lambda function which compiles the osw files into error_col and simulations files."
   else
+    ammend_cycles = cycles.to_i + 1
     col_res_resp_all = []
     file_prefix = ['error_col', 'simulations']
     file_prefix.each do |file_pref|
       puts file_pref
-      col_res_resp = col_res(osa_id: analysis_id, bucket_name: bucket_name, cycles: cycles, file_pref: file_pref)
+      col_res_resp = col_res(osa_id: analysis_id, bucket_name: bucket_name, cycles: ammend_cycles, file_pref: file_pref)
       col_res_resp_all << col_res_resp
     end
   end
