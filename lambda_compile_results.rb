@@ -19,7 +19,7 @@ def invoke_lambda(osa_id:, bucket_name:, object_keys:)
   puts 'Object keys passed to invoke_lambda method:'
   puts object_keys
   region = 'us-east-1'
-  client = Aws::Lambda::Client.new(region: region)
+  client = Aws::Lambda::Client.new(region: region, http_read_timeout: 1800)
   analysis_info = JSON.parse(RestClient.get("http://web:80/analyses/#{osa_id}.json", headers={}))
   if analysis_info.nil?
     analysis_json = {
@@ -69,7 +69,7 @@ end
 # the name and that have .zip at the end.
 def get_analysis_objects(osa_id:, bucket_name:)
   region = 'us-east-1'
-  client = Aws::Lambda::Client.new(region: region)
+  client = Aws::Lambda::Client.new(region: region, http_read_timeout: 1800)
   req_payload = {
       osa_id: osa_id,
       bucket_name: bucket_name
@@ -89,7 +89,7 @@ end
 
 def col_res(osa_id:, bucket_name:, cycles:, file_pref:)
   region = 'us-east-1'
-  client = Aws::Lambda::Client.new(region: region)
+  client = Aws::Lambda::Client.new(region: region, http_read_timeout: 1800)
   req_payload = {
       osa_id: osa_id,
       bucket_name: bucket_name,
