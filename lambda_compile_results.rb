@@ -95,6 +95,8 @@ def col_res(osa_id:, bucket_name:, cycles:, file_pref:)
       cycle_count: cycles,
       append_tag: file_pref
   }
+  puts "Ammend BTAP results payload:"
+  puts req_payload
   payload = JSON.generate(req_payload)
   resp = client.invoke({
                            function_name: 'append_BTAP_results',
@@ -145,6 +147,7 @@ else
     col_res_resp_all = []
     file_prefix = ['error_col', 'simulations']
     file_prefix.each do |file_pref|
+      puts file_pref
       col_res_resp = col_res(osa_id: analysis_id, bucket_name: bucket_name, cycles: cycles, file_pref: file_pref)
       col_res_resp_all << col_res_resp
     end
