@@ -32,6 +32,15 @@ def zip_results(in_file:, out_file_name:)
   return zipfile_name
 end
 
+def get_analysis_name(aid:)
+  analysis_json = JSON.parse(RestClient.get("http://web:80/analyses/#{aid}.json", headers={}))
+  analysis_name = []
+  unless analysis_json.nil?
+    analysis_name=analysis_json['analysis']['display_name']
+  end
+  return analysis_name
+end
+
 #Get datapoint directory passed from worker finalization script.
 input_arguments = ARGV
 out_dir = input_arguments[0].to_s
@@ -82,7 +91,8 @@ if File.file?(out_file)
       #'osa_id/osd_id.osw'.
       out_file_name = 'temp_out_osw'
       zip_file_loc = zip_results(in_file: out_file, out_file_name: out_file_name)
-      file_id = osa_id + "/" + osd_id + ".zip"
+      analysis_name = get_analysis_name(aid: osa_id)
+      file_id = analysis_name + "_" + osa_id + "/" + osd_id + ".zip"
       out_obj = bucket.object(file_id)
       while out_obj.exists? == false
         out_obj.upload_file(zip_file_loc)
