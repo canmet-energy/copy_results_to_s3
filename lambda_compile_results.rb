@@ -84,7 +84,7 @@ def col_res(osa_id:, bucket_name:, cycles:, file_pref:, analysis_json:)
       bucket_name: bucket_name,
       cycle_count: cycles,
       append_tag: file_pref,
-      analysis_id: analysis_json
+      analysis_json: analysis_json
   }
   puts "Ammend BTAP results payload:"
   puts req_payload
