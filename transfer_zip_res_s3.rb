@@ -14,6 +14,7 @@ require 'securerandom'
 require 'aws-sdk-s3'
 require 'json'
 require 'zip'
+require 'rest-client'
 
 # Source copied and modified from https://github.com/rubyzip/rubyzip
 # creates a zip of the given file and places the zipped file at the
