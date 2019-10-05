@@ -114,7 +114,16 @@ def get_analysis_info(osa_id:)
         analysis_name: analysis_info['analysis']['display_name']
     }
   end
-  return analysis_json
+  return analysis_json, analysis_info
+end
+
+def put_on_s3(bucket_name:, analysis_id:, analysis_name:, analysis_info:)
+  region = 'us-east-1'
+  s3 = Aws::S3::Resource.new(region: region)
+  bucket = s3.bucket(bucket_name)
+  file_id = analysis_name + "_" + analysis_id + "/" + "analysis.json"
+  analysis_obj = bucket.object(file_id)
+  analysis_obj.put(body: JSON.pretty_generate(analysis_info))
 end
 
 #Get the analysis_id from the server finalization script.
@@ -130,7 +139,7 @@ curr_time = time_obj.year.to_s + "-" + time_obj.month.to_s + "-" + time_obj.day.
 #lambda function.  Otherwise put an error log up saying that the analysis has not started.  This check is required
 #because OpenStudio_server 2.8.1 run the server finalization script at the start and end of the analysis rather than
 #just at the end.
-analysis_json = get_analysis_info(osa_id: analysis_id)
+analysis_json, analysis_info = get_analysis_info(osa_id: analysis_id)
 analysis_objects = get_analysis_objects(osa_id: analysis_id, bucket_name: bucket_name, analysis_json: analysis_json)
 object_keys = JSON.parse(analysis_objects["body"])
 if object_keys.empty?
@@ -159,5 +168,6 @@ else
       col_res_resp = col_res(osa_id: analysis_id, bucket_name: bucket_name, cycles: ammend_cycles, file_pref: file_pref, analysis_json: analysis_json)
       col_res_resp_all << col_res_resp
     end
+    put_on_s3(bucket_name: bucket_name, analysis_id: analysis_id, analysis_name: analysis_json, analysis_info: analysis_info)
   end
 end
