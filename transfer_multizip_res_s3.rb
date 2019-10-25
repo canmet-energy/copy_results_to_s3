@@ -17,20 +17,17 @@ require 'zip'
 require 'rest-client'
 
 # Source copied and modified from https://github.com/rubyzip/rubyzip
-# creates a zip of the given file and places the zipped file at the
-# same location as the file
-def zip_results(in_file:, out_file_name:)
-  return false unless File.exist?(in_file)
-  folder = File.dirname(in_file)
-  input_filename = File.basename(in_file)
-  zipfile_name = "#{folder}/#{out_file_name}.zip"
-  puts "\n\tzipfile_name: #{zipfile_name}"
-  ::Zip::File.open(zipfile_name, ::Zip::File::CREATE) do |zipfile|
-    zipfile.get_output_stream(input_filename) do |out_file|
-      out_file.write(File.open(in_file, 'rb').read)
+# creates a zip of the given files and places the zipped file with the
+# name 'out_file_name' (includes full path to file).
+def zip_results(in_files:, out_file_name:)
+  Zip::File.open(out_file_name, Zip::File::CREATE) do |zipfile|
+    in_files.each do |in_file|
+      # Two arguments:
+      # - The name of the file as it will appear in the archive
+      # - The original file, including the path to find it
+      zipfile.add(in_file[:filename], File.join(in_file[:location], in_file[:filename]))
     end
   end
-  return zipfile_name
 end
 
 def get_analysis_name(aid:)
@@ -54,110 +51,70 @@ region = 'us-east-1'
 s3 = Aws::S3::Resource.new(region: region)
 bucket = s3.bucket(bucket_name)
 
-#Get current time and date (to use in logs)
-time_obj = Time.new
-curr_time = time_obj.year.to_s + "-" + time_obj.month.to_s + "-" + time_obj.day.to_s + "_" + time_obj.hour.to_s + ":" + time_obj.min.to_s + ":" + time_obj.sec.to_s + ":" + time_obj.usec.to_s
 
-#Determine where osw file is
-# curr_dir = Dir.pwd
-# main_dir = curr_dir[0..-4]
+# Determine where the files are.
 main_dir = File.expand_path("..", Dir.pwd)
 out_file_loc = main_dir + "/" + out_dir + "/"
 
 # Files to retrieve:
-osw_file = out_file_loc + "out.osw"
-datapoint_log = out_file_loc + "oscli_simulation.log"
-osm_file = out_file_loc + "run/in.osm"
-ephtml_file = out_file_loc + "reports/eplustbl.html"
-qaqc_file = out_file_loc + "run/001_btap_results/qaqc.json"
-run_log = out_file_loc + "run/run.log"
-eperr_log = out_file_loc + "run/eplusout.err"
-
-out_log = []
+out_files = [
+    {
+        filename: "out.osw",
+        location: "run/"
+    },
+    {
+        filename: "oscli_simulation.log",
+        location: ""
+    },
+    {
+        filename: "in.osm",
+        location: "run/"
+    },
+    {
+        filename: "esplustbl.html",
+        location: "reports/"
+    },
+    {
+        filename: "qaqc.json",
+        location: "run/001_btap_results/"
+    },
+    {
+        filename: "run.log",
+        location: "run/"
+    },
+    {
+        filename: "eplusout.err",
+        location: "run/"
+    }
+]
+out_log = ""
 zip_files = []
-if File.file?(osw_file)
-  zip_files << osw_file
-else
-  out_log = out_log + "Could not find #{osw_file}\n"
-end
-if File.file?(datapoint_log)
-  zip_files << datapoint_log
-else
-  out_log = out_log + "Could not find #{datapoint_log}\n"
-end
-if File.file?(osm_file)
-  zip_files << osm_file
-else
-  out_log = out_log + "Could not find #{osm_file}\n"
-end
-if File.file?(ephtml_file)
-  zip_files << ephtml_file
-else
-  out_log = out_log + "Could not find #{ephtml_file}\n"
-end
-if File.file?(qaqc_file)
-  zip_files << qaqc_file
-else
-  out_log = out_log + "Could not find #{qaqc_file}\n"
-end
-if File.file?(run_log)
-  zip_files << run_log
-else
-  out_log = out_log + "Could not find #{run_log}\n"
-end
-if File.file?(eperr_log)
-  zip_files << eperr_log
-else
-  out_log = out_log + "Colud not find #{eperr_log}\n"
-end
-
-
-#Initialize some file locations
-osa_id = ""
-osd_id = ""
-file_id = ""
-
-#Determine if osw is there, if not then put an error on s3.
-if File.file?(out_file)
-  #Look through the osw and find the osa_id and osd_id
-  File.open(out_file, "r") do |f|
-    f.each_line do |line|
-      if line.match(/   \"osa_id\" : \"/)
-        osa_id = line[15..-4]
-      elsif line.match(/   \"osd_id\" : \"/)
-        osd_id = line[15..-4]
-        end
-    end
-    #If either the osa_id or osd_id is missing then something is wrong so put an error on s3.
-    if osa_id == "" || osd_id == ""
-      file_id = "log_" + curr_time
-      log_file_loc = "./" + file_id + "txt"
-      log_file = File.open(log_file_loc, 'w')
-      log_file.puts "Either could not find osa_id or osd_id in out.osw file."
-      log_file.close
-      log_obj = bucket.object("log/" + file_id)
-      log_obj.upload_file(log_file_loc)
-    else
-      #If an osa_id and osw_id exist then assume the osw is good and put it in the s3 bucket with the name
-      #'osa_id/osd_id.osw'.
-      out_file_name = 'temp_out_osw'
-      zip_file_loc = zip_results(in_file: out_file, out_file_name: out_file_name)
-      analysis_name = get_analysis_name(aid: osa_id)
-      file_id = analysis_name + "_" + osa_id + "/" + osd_id + ".zip"
-      out_obj = bucket.object(file_id)
-      while out_obj.exists? == false
-        out_obj.upload_file(zip_file_loc)
-      end
-      File.delete(zip_file_loc) if File.exist?(zip_file_loc)
-    end
+out_files.each do |out_file|
+  if File.file?(File.join(out_file_loc, out_file[:location], out_file[:filename]))
+    zip_files << {
+        filename: out_file[:filename],
+        location:  out_file_loc + out_file[:location]
+    }
+  else
+    out_log += "Could not find #{out_file_loc + out_file[:location] + out_file[:filename]}\n"
   end
-else
-  # Error create error log in s3 bucket if no osw is found.
-  file_id = "log_" + curr_time
-  log_file_loc = "./" + file_id + "txt"
-  log_file = File.open(log_file_loc, 'w')
-  log_file.puts "#{out_file} could not be found."
-  log_file.close
-  log_obj = bucket.object("log/" + file_id)
-  log_obj.upload_file(log_file_loc)
 end
+unless out_log == ""
+  File.open(File.join(out_file_loc, "missing_files.log"), 'w') {|file| file.write(out_log)}
+  zip_files << {
+      filename: "missing_files.log",
+      location: out_file_loc
+  }
+end
+zip_file_name = out_file_loc + "results.zip"
+
+zip_results(in_files: zip_files, out_file_name: zip_file_name)
+
+# Build S3 object name and put on S3
+analysis_name = get_analysis_name(aid: analysis_id)
+file_id = analysis_name + "_" + analysis_id + "/" + datapoint_id + ".zip"
+out_obj = bucket.object(file_id)
+while out_obj.exists? == false
+  out_obj.upload_file(zip_file_name)
+end
+File.delete(zip_file_name) if File.exist?(zip_file_name)
