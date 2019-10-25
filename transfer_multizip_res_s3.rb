@@ -61,11 +61,55 @@ curr_time = time_obj.year.to_s + "-" + time_obj.month.to_s + "-" + time_obj.day.
 #Determine where osw file is
 # curr_dir = Dir.pwd
 # main_dir = curr_dir[0..-4]
-main_dir = File.xpand_path("..", Dir.pwd)
-out_file_loc = main_dir + out_dir + "/"
+main_dir = File.expand_path("..", Dir.pwd)
+out_file_loc = main_dir + "/" + out_dir + "/"
+
+# Files to retrieve:
 osw_file = out_file_loc + "out.osw"
-osm_file = out_file_loc + "final.osm"
-html_file = out_file_loc + "reports" + "/" + "eplustbl.html"
+datapoint_log = out_file_loc + "oscli_simulation.log"
+osm_file = out_file_loc + "run/in.osm"
+ephtml_file = out_file_loc + "reports/eplustbl.html"
+qaqc_file = out_file_loc + "run/001_btap_results/qaqc.json"
+run_log = out_file_loc + "run/run.log"
+eperr_log = out_file_loc + "run/eplusout.err"
+
+out_log = []
+zip_files = []
+if File.file?(osw_file)
+  zip_files << osw_file
+else
+  out_log = out_log + "Could not find #{osw_file}\n"
+end
+if File.file?(datapoint_log)
+  zip_files << datapoint_log
+else
+  out_log = out_log + "Could not find #{datapoint_log}\n"
+end
+if File.file?(osm_file)
+  zip_files << osm_file
+else
+  out_log = out_log + "Could not find #{osm_file}\n"
+end
+if File.file?(ephtml_file)
+  zip_files << ephtml_file
+else
+  out_log = out_log + "Could not find #{ephtml_file}\n"
+end
+if File.file?(qaqc_file)
+  zip_files << qaqc_file
+else
+  out_log = out_log + "Could not find #{qaqc_file}\n"
+end
+if File.file?(run_log)
+  zip_files << run_log
+else
+  out_log = out_log + "Could not find #{run_log}\n"
+end
+if File.file?(eperr_log)
+  zip_files << eperr_log
+else
+  out_log = out_log + "Colud not find #{eperr_log}\n"
+end
 
 
 #Initialize some file locations
