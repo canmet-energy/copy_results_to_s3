@@ -41,7 +41,7 @@ def invoke_lambda(osa_id:, bucket_name:, object_keys:, analysis_json:)
     }
     payload = JSON.generate(req_payload)
     resp = client.invoke({
-                             function_name: 'compile_multizip_sub_BTAP_results',
+                             function_name: 'compile_multzip_sub_BTAP_results',
                              invocation_type: 'RequestResponse',
                              log_type: 'Tail',
                              payload: payload
