@@ -60,7 +60,7 @@ out_file_loc = main_dir + "/" + out_dir + "/"
 out_files = [
     {
         filename: "out.osw",
-        location: "run/"
+        location: ""
     },
     {
         filename: "oscli_simulation.log",
@@ -71,7 +71,7 @@ out_files = [
         location: "run/"
     },
     {
-        filename: "esplustbl.html",
+        filename: "eplustbl.html",
         location: "reports/"
     },
     {
