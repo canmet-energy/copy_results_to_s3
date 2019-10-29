@@ -45,10 +45,10 @@ out_dir = input_arguments[0].to_s
 bucket_name = input_arguments[1].to_s
 analysis_id = input_arguments[2].to_s
 datapoint_id = input_arguments[3].to_s
+aws_region = input_arguments[4].to_s
 
 #Set up s3.
-region = 'us-east-1'
-s3 = Aws::S3::Resource.new(region: region)
+s3 = Aws::S3::Resource.new(region: aws_region)
 bucket = s3.bucket(bucket_name)
 
 
@@ -89,6 +89,7 @@ out_files = [
 ]
 out_log = ""
 zip_files = []
+# Check if the files exist.  If they do not add them to the log of files which could not be found.
 out_files.each do |out_file|
   if File.file?(File.join(out_file_loc, out_file[:location], out_file[:filename]))
     zip_files << {
@@ -106,8 +107,10 @@ unless out_log == ""
       location: out_file_loc
   }
 end
+# Create the name of the results zip file.
 zip_file_name = out_file_loc + "results.zip"
 
+# Zip the files.
 zip_results(in_files: zip_files, out_file_name: zip_file_name)
 
 # Build S3 object name and put on S3
