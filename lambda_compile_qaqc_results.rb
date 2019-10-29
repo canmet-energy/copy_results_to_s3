@@ -15,10 +15,9 @@ require 'aws-sdk-lambda'
 require 'json'
 require 'rest-client'
 
-def invoke_lambda(osa_id:, bucket_name:, object_keys:, analysis_json:)
+def invoke_lambda(osa_id:, bucket_name:, object_keys:, analysis_json:, region:)
   puts 'Object keys passed to invoke_lambda method:'
   puts object_keys
-  region = 'us-east-1'
   client = Aws::Lambda::Client.new(region: region, http_read_timeout: 1800)
   resp_col = []
   block_size = 500.0
@@ -37,6 +36,7 @@ def invoke_lambda(osa_id:, bucket_name:, object_keys:, analysis_json:)
         bucket_name: bucket_name,
         object_keys: object_subkeys,
         cycle_count: cycle_count,
+        region: region,
         analysis_json: analysis_json
     }
     payload = JSON.generate(req_payload)
@@ -55,12 +55,12 @@ end
 
 # This calls a lambda function which collects the names of all of the objects in an s3 bucket with the analysis_id in
 # the name and that have .zip at the end.
-def get_analysis_objects(osa_id:, bucket_name:, analysis_json:)
-  region = 'us-east-1'
+def get_analysis_objects(osa_id:, bucket_name:, analysis_json:, region:)
   client = Aws::Lambda::Client.new(region: region, http_read_timeout: 1800)
   req_payload = {
       osa_id: osa_id,
       bucket_name: bucket_name,
+      region: region,
       analysis_name: analysis_json[:analysis_name]
   }
   payload = JSON.generate(req_payload)
@@ -76,14 +76,14 @@ def get_analysis_objects(osa_id:, bucket_name:, analysis_json:)
   return ret_objects
 end
 
-def col_res(osa_id:, bucket_name:, cycles:, file_pref:, analysis_json:)
-  region = 'us-east-1'
+def col_res(osa_id:, bucket_name:, cycles:, file_pref:, analysis_json:, region:)
   client = Aws::Lambda::Client.new(region: region, http_read_timeout: 1800)
   req_payload = {
       osa_id: osa_id,
       bucket_name: bucket_name,
       cycle_count: cycles,
       append_tag: file_pref,
+      region: region,
       analysis_json: analysis_json
   }
   puts "Ammend BTAP results payload:"
@@ -121,6 +121,7 @@ end
 input_arguments = ARGV
 analysis_id = input_arguments[0].to_s
 bucket_name = input_arguments[1].to_s
+aws_region = input_arguments[2].to_s
 
 #Get current time and date (to use in logs)
 time_obj = Time.new
@@ -131,14 +132,13 @@ curr_time = time_obj.year.to_s + "-" + time_obj.month.to_s + "-" + time_obj.day.
 #because OpenStudio_server 2.8.1 run the server finalization script at the start and end of the analysis rather than
 #just at the end.
 analysis_json = get_analysis_info(osa_id: analysis_id)
-analysis_objects = get_analysis_objects(osa_id: analysis_id, bucket_name: bucket_name, analysis_json: analysis_json)
+analysis_objects = get_analysis_objects(osa_id: analysis_id, bucket_name: bucket_name, analysis_json: analysis_json, region: aws_region)
 object_keys = JSON.parse(analysis_objects["body"])
 if object_keys.empty?
-  region = 'us-east-1'
-  s3 = Aws::S3::Resource.new(region: region)
+  s3 = Aws::S3::Resource.new(region: aws_region)
   bucket = s3.bucket(bucket_name)
   file_id = "error_coll_log_" + curr_time
-  log_file_contents = "No analysis data could be found."
+  log_file_contents = "No analysis data could be found in folder with analysis ID: #{analysis_id}; and analysis name: #{analysis_json[:analysis_name]}."
   log_obj = bucket.object("log/" + file_id)
   log_obj.put(body: log_file_contents)
 else
@@ -146,7 +146,7 @@ else
   # error_col_#.json and simulations_#.json files in sets of 1000.  Once successfully completed another lambda
   # function is called which collates the error_col_#.json and simulations_#.json files into master error_col.json
   # and simulations.json files.
-  col_lambda_resp, cycles = invoke_lambda(osa_id: analysis_id, bucket_name: bucket_name, object_keys: object_keys, analysis_json: analysis_json)
+  col_lambda_resp, cycles = invoke_lambda(osa_id: analysis_id, bucket_name: bucket_name, object_keys: object_keys, analysis_json: analysis_json, region: aws_region)
   #Need to fix this so it actually checks for a response.
   if col_lambda_resp.empty? || col_lambda_resp[0].nil? || cycles.nil?
     "There was an error in the lambda function which compiles the osw files into error_col and simulations files."
@@ -156,7 +156,7 @@ else
     file_prefix = ['error_col', 'simulations']
     file_prefix.each do |file_pref|
       puts file_pref
-      col_res_resp = col_res(osa_id: analysis_id, bucket_name: bucket_name, cycles: ammend_cycles, file_pref: file_pref, analysis_json: analysis_json)
+      col_res_resp = col_res(osa_id: analysis_id, bucket_name: bucket_name, cycles: ammend_cycles, file_pref: file_pref, analysis_json: analysis_json, region: aws_region)
       col_res_resp_all << col_res_resp
     end
   end
