@@ -73,7 +73,7 @@ def get_analysis_objects(osa_id:, bucket_name:, analysis_json:, region:)
   puts "Get analysis objects lambda function response:"
   ret_status = resp.status_code
   if ret_status == 200
-    object_name = analysis_name + '_' + osa_id + '/' + datapoint_ids.json
+    object_name = analysis_name + '_' + osa_id + '/' + 'datapoint_ids.json'
   else
 	puts 'hello'
   end
