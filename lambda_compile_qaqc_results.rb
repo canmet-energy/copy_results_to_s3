@@ -65,12 +65,18 @@ def get_analysis_objects(osa_id:, bucket_name:, analysis_json:, region:)
   }
   payload = JSON.generate(req_payload)
   resp = client.invoke({
-                           function_name: 'get_analysis_object_names',
+                           function_name: 'get_analysis_object_names_s3',
                            invocation_type: 'RequestResponse',
                            log_type: 'Tail',
                            payload: payload
                        })
   puts "Get analysis objects lambda function response:"
+  ret_status = resp.status_code
+  if ret_status == 200
+    object_name = analysis_name + '_' + osa_id + '/' + datapoint_ids.json
+  else
+	puts 'hello'
+  end
   ret_objects = JSON.parse(resp.payload.string)
   puts ret_objects
   return ret_objects
