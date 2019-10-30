@@ -149,11 +149,11 @@ else
   col_lambda_resp, cycles = invoke_lambda(osa_id: analysis_id, bucket_name: bucket_name, object_keys: object_keys, analysis_json: analysis_json, region: aws_region)
   #Need to fix this so it actually checks for a response.
   if col_lambda_resp.empty? || col_lambda_resp[0].nil? || cycles.nil?
-    "There was an error in the lambda function which compiles the osw files into error_col and simulations files."
+    "There was an error in the lambda function which compiles qaqc.json files into simulations files."
   else
     ammend_cycles = cycles.to_i + 1
     col_res_resp_all = []
-    file_prefix = ['error_col', 'simulations']
+    file_prefix = ['simulations']
     file_prefix.each do |file_pref|
       puts file_pref
       col_res_resp = col_res(osa_id: analysis_id, bucket_name: bucket_name, cycles: ammend_cycles, file_pref: file_pref, analysis_json: analysis_json, region: aws_region)
