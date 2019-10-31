@@ -72,13 +72,11 @@ def get_analysis_objects(osa_id:, bucket_name:, analysis_json:, region:)
                        })
   puts "Get analysis objects lambda function response:"
   ret_status = resp.status_code
+  ret_objects = []
   if ret_status == 200
     object_name = analysis_name + '_' + osa_id + '/' + 'datapoint_ids.json'
-  else
-	puts 'hello'
+    ret_objects.concat(get_s3_stream(file_id: object_name, bucket_name: bucket_name, region: region))
   end
-  ret_objects = JSON.parse(resp.payload.string)
-  puts ret_objects
   return ret_objects
 end
 
@@ -121,6 +119,19 @@ def get_analysis_info(osa_id:)
     }
   end
   return analysis_json
+end
+
+def get_s3_stream(file_id:, bucket_name:, region:)
+  s3_res = Aws::S3::Resource.new(region: region)
+  bucket = s3_res.bucket(bucket_name)
+  ret_bucket = bucket.object(file_id)
+  if ret_bucket.exists?
+    s3_cli = Aws::S3::Client.new(region: region)
+    return_data = JSON.parse(s3_cli.get_object(bucket: bucket_name, key: file_id).body.read)
+  else
+    return_data = []
+  end
+  return return_data
 end
 
 #Get the analysis_id from the server finalization script.
