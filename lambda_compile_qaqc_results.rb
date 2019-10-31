@@ -74,7 +74,7 @@ def get_analysis_objects(osa_id:, bucket_name:, analysis_json:, region:)
   ret_status = resp.status_code
   ret_objects = []
   if ret_status == 200
-    object_name = analysis_name + '_' + osa_id + '/' + 'datapoint_ids.json'
+    object_name = analysis_json[:analysis_name] + '_' + osa_id + '/' + 'datapoint_ids.json'
     ret_objects.concat(get_s3_stream(file_id: object_name, bucket_name: bucket_name, region: region))
   end
   return ret_objects
