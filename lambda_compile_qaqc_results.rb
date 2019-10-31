@@ -22,14 +22,20 @@ def invoke_lambda(osa_id:, bucket_name:, object_keys:, analysis_json:, region:)
   resp_col = []
   block_size = 2.0
   cycles = (object_keys.size.to_f/block_size)
+  equal_num = false
   if (cycles.round(7) - cycles.round(7).truncate.to_f) == 0.0
     cycles = cycles.round(7) - 1.0
+    equal_num = true
   end
   for cycle_count in 0..cycles.to_i
     count_left = cycles - cycle_count
     sub_start = (cycle_count*block_size).round(0)
     count_left >= 1 ? sub_end = sub_start + (block_size.to_i - 1) : sub_end = sub_start + (count_left*block_size).round(0) - 1
+    if equal_num == true
+      count_left >= 1 ? sub_end = sub_start + (block_size.to_i - 1) : sub_end = sub_start + block_size.round(0).to_i - 1
+    end
     object_subkeys = object_keys[sub_start..sub_end]
+    puts ""
     puts "Object keys passed to compile_sub_BTAP_results lambda function:"
     puts object_subkeys
     puts "object_subkeys size:"
