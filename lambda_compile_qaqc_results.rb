@@ -20,7 +20,7 @@ def invoke_lambda(osa_id:, bucket_name:, object_keys:, analysis_json:, region:)
   puts object_keys
   client = Aws::Lambda::Client.new(region: region, http_read_timeout: 1800)
   resp_col = []
-  block_size = 2.0
+  block_size = 500.0
   cycles = (object_keys.size.to_f/block_size)
   equal_num = false
   if (cycles.round(7) - cycles.round(7).truncate.to_f) == 0.0
