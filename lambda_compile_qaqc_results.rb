@@ -138,7 +138,7 @@ def loc_col_res(osa_id:, bucket_name:, append_tag:, cycle_count:, analysis_name:
   s3_cli = Aws::S3::Client.new(region: region)
   res_comp = "["
   for result_num in 1..cycle_count
-    res_key = analysis_json[:analysis_name] + '_' + osa_id + '/' + append_tag + '_' + result_num.to_s + '.json'
+    res_key = analysis_name + '_' + osa_id + '/' + append_tag + '_' + result_num.to_s + '.json'
     res_comp << s3_cli.get_object(bucket: bucket_name, key: res_key).body.read[1..-2] + ','
   end
   res_comp[-1] = ']'
