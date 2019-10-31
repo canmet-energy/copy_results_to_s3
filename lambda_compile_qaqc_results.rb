@@ -134,11 +134,29 @@ def get_s3_stream(file_id:, bucket_name:, region:)
   return return_data
 end
 
+def loc_col_res(osa_id:, bucket_name:, append_tag:, cycle_count:, analysis_name:, region:)
+  s3_cli = Aws::S3::Client.new(region: region)
+  res_comp = "["
+  for result_num in 1..cycle_count
+    res_key = analysis_json[:analysis_name] + '_' + osa_id + '/' + append_tag + '_' + result_num.to_s + '.json'
+    res_comp << s3_cli.get_object(bucket: bucket_name, key: res_key).body.read[1..-2] + ','
+  end
+  res_comp[-1] = ']'
+  out_key = analysis_json[:analysis_name] + '_' + osa_id + '/' + append_tag + '.json'
+  resp = s3_cli.put_object({
+                               body: res_comp,
+                               bucket: bucket_name,
+                               key: out_key
+                           })
+  return resp
+end
+
 #Get the analysis_id from the server finalization script.
 input_arguments = ARGV
 analysis_id = input_arguments[0].to_s
 bucket_name = input_arguments[1].to_s
 aws_region = input_arguments[2].to_s
+proc_local = input_arguments[3].to_s
 
 #Get current time and date (to use in logs)
 time_obj = Time.new
@@ -149,8 +167,7 @@ curr_time = time_obj.year.to_s + "-" + time_obj.month.to_s + "-" + time_obj.day.
 #because OpenStudio_server 2.8.1 run the server finalization script at the start and end of the analysis rather than
 #just at the end.
 analysis_json = get_analysis_info(osa_id: analysis_id)
-analysis_objects = get_analysis_objects(osa_id: analysis_id, bucket_name: bucket_name, analysis_json: analysis_json, region: aws_region)
-object_keys = JSON.parse(analysis_objects["body"])
+object_keys = get_analysis_objects(osa_id: analysis_id, bucket_name: bucket_name, analysis_json: analysis_json, region: aws_region)
 if object_keys.empty?
   s3 = Aws::S3::Resource.new(region: aws_region)
   bucket = s3.bucket(bucket_name)
@@ -159,10 +176,12 @@ if object_keys.empty?
   log_obj = bucket.object("log/" + file_id)
   log_obj.put(body: log_file_contents)
 else
-  # If an s3 object with the analysis_id exists then first run the lambda function which turns the osw files into
-  # error_col_#.json and simulations_#.json files in sets of 1000.  Once successfully completed another lambda
-  # function is called which collates the error_col_#.json and simulations_#.json files into master error_col.json
-  # and simulations.json files.
+  # If an s3 object with the analysis_id exists then first run the lambda function which extracts the qaqc.json file
+  # form the result.zip files and combines them into simulations_#.json files in sets of 500.  Once successfully
+  # completed them combine the simulations_#.json files into a final simulations.json file and put it on s3.  If
+  # proc_local is true this is done on the EC2 instance, if it is false this is done via a lambda function.  The lambda
+  # function will use less processing (and data transfer) on the EC2 instance which may reduce the likelyhood of data
+  # transfer errors.  However, the lambda function is limited to 3GB of memory and can only run for up to 15 minutes.
   col_lambda_resp, cycles = invoke_lambda(osa_id: analysis_id, bucket_name: bucket_name, object_keys: object_keys, analysis_json: analysis_json, region: aws_region)
   #Need to fix this so it actually checks for a response.
   if col_lambda_resp.empty? || col_lambda_resp[0].nil? || cycles.nil?
@@ -171,10 +190,21 @@ else
     ammend_cycles = cycles.to_i + 1
     col_res_resp_all = []
     file_prefix = ['simulations']
-    file_prefix.each do |file_pref|
-      puts file_pref
-      col_res_resp = col_res(osa_id: analysis_id, bucket_name: bucket_name, cycles: ammend_cycles, file_pref: file_pref, analysis_json: analysis_json, region: aws_region)
-      col_res_resp_all << col_res_resp
+    if proc_local.downcase == "false"
+      # Currently this only appends simulations_# files but you could modify the compile_multzip_sub_BTAP_results lambda
+      # funciton to append other files in the results.zip files and then compile those here too (as was originally done
+      # with the eplus error files).
+      file_prefix.each do |file_pref|
+        puts file_pref
+        col_res_resp = col_res(osa_id: analysis_id, bucket_name: bucket_name, cycles: ammend_cycles, file_pref: file_pref, analysis_json: analysis_json, region: aws_region)
+        col_res_resp_all << col_res_resp
+      end
+    else
+      file_prefix.each do |file_pref|
+        puts file_pref
+        col_res_resp = loc_col_res(osa_id: analysis_id, bucket_name: bucket_name, append_tag: file_pref, cycle_count: ammend_cycles, analysis_name: analysis_json[:analysis_name], region: aws_region)
+        col_res_resp_all << col_res_resp
+      end
     end
   end
 end
