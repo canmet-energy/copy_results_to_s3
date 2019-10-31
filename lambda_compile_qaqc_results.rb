@@ -142,7 +142,7 @@ def loc_col_res(osa_id:, bucket_name:, append_tag:, cycle_count:, analysis_name:
     res_comp << s3_cli.get_object(bucket: bucket_name, key: res_key).body.read[1..-2] + ','
   end
   res_comp[-1] = ']'
-  out_key = analysis_json[:analysis_name] + '_' + osa_id + '/' + append_tag + '.json'
+  out_key = analysis_name + '_' + osa_id + '/' + append_tag + '.json'
   resp = s3_cli.put_object({
                                body: res_comp,
                                bucket: bucket_name,
