@@ -230,7 +230,7 @@ def collate_output_locally(osa_id: , bucket_name:, append_tags:, analysis_name:,
     ret_status << put_data_s3(file_id: file_id, bucket_name: bucket_name, data: missing_files, region: region)
   end
   file_id = s3_object_tag_start + append_tags[0] + '.json'
-  ret_status << put_data_s3(file_id: file_id, bucket_name: bucket_name, data: missing_files, region: region)
+  ret_status << put_data_s3(file_id: file_id, bucket_name: bucket_name, data: col_data, region: region)
   return ret_status
 end
 
