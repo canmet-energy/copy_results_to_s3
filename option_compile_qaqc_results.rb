@@ -215,13 +215,13 @@ def collate_output_locally(osa_id: , bucket_name:, append_tags:, analysis_name:,
           object_key: object_key,
           message: "No qaqc.json file present in zip file."
       }
-      File.delete(zip_info[:exist])
+      File.delete(zip_info[:file])
       next
     else
       ret_data[:out_info].each do |ret_dp|
         col_data << JSON.parse(ret_dp)
       end
-      File.delete(zip_info[:exist])
+      File.delete(zip_info[:file])
     end
   end
   s3_object_tag_start = analysis_name + '_' + osa_id + '/'
