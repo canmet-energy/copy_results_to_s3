@@ -342,7 +342,7 @@ elsif proc_local.downcase != "alllocal"
         col_res_resp = col_res(osa_id: analysis_id, bucket_name: bucket_name, cycles: ammend_cycles, file_pref: file_pref, analysis_json: analysis_json, region: aws_region)
         col_res_resp_all << col_res_resp
       end
-    elsif part_local.downcase == "partlocal"
+    elsif proc_local.downcase == "partlocal"
       file_prefix.each do |file_pref|
         puts file_pref
         col_res_resp = loc_col_res(osa_id: analysis_id, bucket_name: bucket_name, append_tag: file_pref, cycle_count: ammend_cycles, analysis_name: analysis_json[:analysis_name], region: aws_region)
