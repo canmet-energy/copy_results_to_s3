@@ -202,16 +202,22 @@ def collate_output_locally(osa_id: , bucket_name:, append_tags:, analysis_name:,
   object_keys.each do |object_key|
     zip_info = get_file_s3(file_id: object_key, bucket_name: bucket_name, region: region)
     if zip_info[:exist] == false
-      missing_files << object_key + '_missing'
+      missing_files << {
+          object_key: object_key,
+          message: "Could not retrieve zip file."
+      }
       next
     end
     ret_data = unzip_files(zip_name: zip_info[:file], search_name: search_file)
-    if ret_data.nil? || ret_data.empty?
-      missing_files << object_key + '_empty'
+    if ret_data[:status] == false
+      missing_files << {
+          object_key: object_key,
+          message: "No qaqc.json file present in zip file."
+      }
       File.delete(zip_info[:exist])
       next
     else
-      ret_data.each do |ret_dp|
+      ret_data[:out_info].each do |ret_dp|
         col_data << JSON.parse(ret_dp)
       end
       File.delete(zip_info[:exist])
@@ -219,7 +225,7 @@ def collate_output_locally(osa_id: , bucket_name:, append_tags:, analysis_name:,
   end
   s3_object_tag_start = analysis_name + '_' + osa_id + '/'
   unless missing_files.empty?
-    file_id = s3_object_tag_start + 'missing_empty_files.json'
+    file_id = s3_object_tag_start + 'missing_files.json'
     ret_status << put_data_s3(file_id: file_id, bucket_name: bucket_name, data: missing_files, region: region)
   end
   file_id = s3_object_tag_start + append_tags[0] + '.json'
@@ -231,9 +237,12 @@ def get_file_s3(file_id:, bucket_name:, region:)
   s3 = Aws::S3::Resource.new(region: region)
   bucket = s3.bucket(bucket_name)
   ret_bucket = bucket.object(file_id)
+  download_loc = "/tmp/out.zip"
+  if File.exist?(download_loc)
+    File.delete(download_loc)
+  end
   if ret_bucket.exists?
     #If you find an osw.zip file try downloading it and adding the information to the error_col array of hashes.
-    download_loc = './out.zip'
     zip_index = 0
     while zip_index < 10
       zip_index += 1
@@ -250,22 +259,30 @@ def get_file_s3(file_id:, bucket_name:, region:)
   end
 end
 
+# Source copied and modified from https://github.com/rubyzip/rubyzip.
+# This extracts the data from a zip file that presumably contains a json file.  It returns the contents of that file in
+# an array of hashes (if there were multiple files in the zip file.)
 def unzip_files(zip_name:, search_name: nil)
-  out_info = []
+  output = {
+      status: false,
+      out_info: []
+  }
   Zip::File.open(zip_name) do |zip_file|
     zip_file.each do |entry|
       if search_name.nil?
+        output[:status] = true
         content = entry.get_input_stream.read
-        out_info << content
+        output[:out_info] << content
       else
         if entry.name == search_name
+          output[:status] = true
           content = entry.get_input_stream.read
-          out_info << content
+          output[:out_info] << content
         end
       end
     end
   end
-  return out_info
+  return output
 end
 
 def put_data_s3(file_id:, bucket_name:, data:, region:)
@@ -282,7 +299,6 @@ analysis_id = input_arguments[0].to_s
 bucket_name = input_arguments[1].to_s
 aws_region = input_arguments[2].to_s
 proc_local = input_arguments[3].to_s
-all_proc_local = input_arguments[4].to_s
 
 #Get current time and date (to use in logs)
 time_obj = Time.new
@@ -294,6 +310,7 @@ curr_time = time_obj.year.to_s + "-" + time_obj.month.to_s + "-" + time_obj.day.
 #just at the end.
 analysis_json = get_analysis_info(osa_id: analysis_id)
 object_keys = get_analysis_objects(osa_id: analysis_id, bucket_name: bucket_name, analysis_json: analysis_json, region: aws_region)
+file_prefix = ['simulations']
 if object_keys.empty?
   s3 = Aws::S3::Resource.new(region: aws_region)
   bucket = s3.bucket(bucket_name)
@@ -301,7 +318,7 @@ if object_keys.empty?
   log_file_contents = "No analysis data could be found in folder with analysis ID: #{analysis_id}; and analysis name: #{analysis_json[:analysis_name]}."
   log_obj = bucket.object("log/" + file_id)
   log_obj.put(body: log_file_contents)
-elsif all_proc_local == 'false'
+elsif proc_local.downcase != "alllocal"
   # If an s3 object with the analysis_id exists then first run the lambda function which extracts the qaqc.json file
   # form the result.zip files and combines them into simulations_#.json files in sets of 500.  Once successfully
   # completed them combine the simulations_#.json files into a final simulations.json file and put it on s3.  If
@@ -310,7 +327,6 @@ elsif all_proc_local == 'false'
   # transfer errors.  However, the lambda function is limited to 3GB of memory and can only run for up to 15 minutes.
   col_lambda_resp, cycles = invoke_lambda(osa_id: analysis_id, bucket_name: bucket_name, object_keys: object_keys, analysis_json: analysis_json, region: aws_region)
   #Need to fix this so it actually checks for a response.
-  file_prefix = ['simulations']
   if col_lambda_resp.empty? || col_lambda_resp[0].nil? || cycles.nil?
     "There was an error in the lambda function which compiles qaqc.json files into simulations files."
   else
@@ -325,7 +341,7 @@ elsif all_proc_local == 'false'
         col_res_resp = col_res(osa_id: analysis_id, bucket_name: bucket_name, cycles: ammend_cycles, file_pref: file_pref, analysis_json: analysis_json, region: aws_region)
         col_res_resp_all << col_res_resp
       end
-    else
+    elsif part_local.downcase == "partlocal"
       file_prefix.each do |file_pref|
         puts file_pref
         col_res_resp = loc_col_res(osa_id: analysis_id, bucket_name: bucket_name, append_tag: file_pref, cycle_count: ammend_cycles, analysis_name: analysis_json[:analysis_name], region: aws_region)
@@ -333,7 +349,7 @@ elsif all_proc_local == 'false'
       end
     end
   end
-else
+elsif proc_local.downcase == "alllocal"
   search_file = 'qaqc.json'
   output = collate_output_locally(osa_id: analysis_id, bucket_name: bucket_name, append_tags: file_prefix, analysis_name: analysis_json[:analysis_name], region: aws_region, object_keys: object_keys, search_file: search_file)
   puts output
