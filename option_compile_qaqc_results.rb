@@ -49,6 +49,7 @@ require 'aws-sdk-s3'
 require 'aws-sdk-lambda'
 require 'json'
 require 'rest-client'
+require 'zip'
 
 def invoke_lambda(osa_id:, bucket_name:, object_keys:, analysis_json:, region:)
   puts 'Object keys passed to invoke_lambda method:'
