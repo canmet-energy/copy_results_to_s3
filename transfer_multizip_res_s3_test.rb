@@ -122,7 +122,7 @@ out_files = [
         location: "run/"
     },
     {
-        filename: "test.txt",
+        filename: "testfile.sql",
         location: ""
     }
 ]
