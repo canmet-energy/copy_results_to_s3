@@ -120,6 +120,10 @@ out_files = [
     {
         filename: "eplusout.err",
         location: "run/"
+    },
+    {
+        filename: "openstudio_results_report.html",
+        location: "reports/"
     }
 ]
 out_log = ""
@@ -156,3 +160,6 @@ while out_obj.exists? == false
   out_obj.upload_file(zip_file_name)
 end
 File.delete(zip_file_name) if File.exist?(zip_file_name)
+if File.file?(File.join(out_file_loc, "missing_files.log"))
+  File.delete(File.join(out_file_loc, "missing_files.log"))
+end
