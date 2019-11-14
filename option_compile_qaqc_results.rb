@@ -72,7 +72,7 @@ def invoke_lambda(osa_id:, bucket_name:, object_keys:, analysis_json:, region:)
     end
     object_subkeys = object_keys[sub_start..sub_end]
     puts ""
-    puts "Object keys passed to compile_sub_BTAP_results lambda function:"
+    puts "Object keys passed to compile_multizip_sub_BTAP_results lambda function:"
     puts object_subkeys
     puts "object_subkeys size:"
     puts object_subkeys.size
@@ -86,12 +86,12 @@ def invoke_lambda(osa_id:, bucket_name:, object_keys:, analysis_json:, region:)
     }
     payload = JSON.generate(req_payload)
     resp = client.invoke({
-                             function_name: 'compile_multzip_sub_BTAP_results',
+                             function_name: 'compile_multizip_sub_BTAP_results',
                              invocation_type: 'RequestResponse',
                              log_type: 'Tail',
                              payload: payload
                          })
-    puts "Compile sub BTAP results lambda function response:"
+    puts "compile_multizip_sub_BTAP results lambda function response:"
     puts JSON.parse(resp.payload.string)
     resp_col << resp
   end
@@ -334,7 +334,7 @@ elsif proc_local.downcase != "alllocal"
     ammend_cycles = cycles.to_i + 1
     col_res_resp_all = []
     if proc_local.downcase == "false"
-      # Currently this only appends simulations_# files but you could modify the compile_multzip_sub_BTAP_results lambda
+      # Currently this only appends simulations_# files but you could modify the compile_multizip_sub_BTAP_results lambda
       # funciton to append other files in the results.zip files and then compile those here too (as was originally done
       # with the eplus error files).
       file_prefix.each do |file_pref|
