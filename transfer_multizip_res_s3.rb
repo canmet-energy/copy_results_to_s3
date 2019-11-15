@@ -50,6 +50,7 @@ require 'aws-sdk-s3'
 require 'json'
 require 'zip'
 require 'rest-client'
+require 'fileutils'
 
 # Source copied and modified from https://github.com/rubyzip/rubyzip
 # creates a zip of the given files and places the zipped file with the
@@ -91,6 +92,13 @@ bucket = s3.bucket(bucket_name)
 main_dir = File.expand_path("..", Dir.pwd)
 out_file_loc = main_dir + "/" + out_dir + "/"
 
+qaqc_full_loc = file_loc = Dir["#{out_file_loc}**/qaqc.json"]
+if qaqc_full_loc.empty?
+  qaqc_loc = ""
+else
+  qaqc_full_loc = File.dirname(qaqc_full_loc[0])
+  qaqc_loc = qaqc_full_loc[out_file_loc.length.to_i..-1] + "/"
+end
 # Files to retrieve:
 out_files = [
     {
@@ -111,7 +119,7 @@ out_files = [
     },
     {
         filename: "qaqc.json",
-        location: "run/001_btap_results/"
+        location: qaqc_loc
     },
     {
         filename: "run.log",
