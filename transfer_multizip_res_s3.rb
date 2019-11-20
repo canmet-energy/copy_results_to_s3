@@ -75,6 +75,21 @@ def get_analysis_name(aid:)
   return analysis_name
 end
 
+def mod_qaqc_file(qaqc_loc:, analysis_name:, analysis_id:, datapoint_id:)
+  qaqc_hash = JSON.parse(File.read(qaqc_loc))
+  code_ver = qaqc_hash['measure_data_table'].select{|data|
+    data['measure_name'].to_s.upcase == "btap_standard_loads".upcase
+  }
+  template = code_ver[0]['value']
+  building_type = qaqc_hash['building']['name']
+  qaqc_hash['analysis_id'] = analysis_id
+  qaqc_hash['analysis_name'] = analysis_name
+  qaqc_hash['run_uuid'] = datapoint_id
+  qaqc_hash['building_type'] = building_type
+  qaqc_hash['template'] = template
+  File.open(qaqc_loc, 'w') { |file| file.write(JSON.generate(qaqc_hash)) }
+end
+
 #Get datapoint directory passed from worker finalization script.
 input_arguments = ARGV
 out_dir = input_arguments[0].to_s
@@ -87,6 +102,8 @@ aws_region = input_arguments[4].to_s
 s3 = Aws::S3::Resource.new(region: aws_region)
 bucket = s3.bucket(bucket_name)
 
+#Get analysis name
+analysis_name = get_analysis_name(aid: analysis_id)
 
 # Determine where the files are.
 main_dir = File.expand_path("..", Dir.pwd)
@@ -96,6 +113,7 @@ qaqc_full_loc = file_loc = Dir["#{out_file_loc}**/qaqc.json"]
 if qaqc_full_loc.empty?
   qaqc_loc = ""
 else
+  mod_qaqc_file(qaqc_loc: qaqc_full_loc[0], analysis_name: analysis_name, analysis_id: analysis_id, datapoint_id: datapoint_id)
   qaqc_full_loc = File.dirname(qaqc_full_loc[0])
   qaqc_loc = qaqc_full_loc[out_file_loc.length.to_i..-1] + "/"
 end
@@ -161,7 +179,6 @@ zip_file_name = out_file_loc + "results.zip"
 zip_results(in_files: zip_files, out_file_name: zip_file_name)
 
 # Build S3 object name and put on S3
-analysis_name = get_analysis_name(aid: analysis_id)
 file_id = analysis_name + "_" + analysis_id + "/" + datapoint_id + ".zip"
 out_obj = bucket.object(file_id)
 while out_obj.exists? == false
