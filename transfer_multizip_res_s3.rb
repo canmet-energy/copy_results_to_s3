@@ -131,6 +131,10 @@ out_files = [
         filename: "in.osm",
         location: "run/"
     },
+  	{
+        filename: "in.idf",
+        location: "run/"
+    },
     {
         filename: "eplustbl.html",
         location: "reports/"
