@@ -35,8 +35,16 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # *******************************************************************************
 
+#Get arguments passed from worker finalization script.
+input_arguments = ARGV
+out_dir = input_arguments[0].to_s
+bucket_name = input_arguments[1].to_s
+analysis_id = input_arguments[2].to_s
+datapoint_id = input_arguments[3].to_s
+aws_region = input_arguments[4].to_s
+gem_loc = input_arguments[5].to_s
+
 # Locate gems and make sure Ruby knows where they are so it can run this script.
-gem_loc = '/usr/local/lib/ruby/gems/2.2.0/gems/'
 gem_dirs = Dir.entries(gem_loc).select {|entry| File.directory? File.join(gem_loc,entry) and !(entry =='.' || entry == '..') }
 gem_dirs.sort.each do |gem_dir|
   lib_loc = ''
@@ -89,14 +97,6 @@ def mod_qaqc_file(qaqc_loc:, analysis_name:, analysis_id:, datapoint_id:)
   qaqc_hash['template'] = template
   File.open(qaqc_loc, 'w') { |file| file.write(JSON.generate(qaqc_hash)) }
 end
-
-#Get datapoint directory passed from worker finalization script.
-input_arguments = ARGV
-out_dir = input_arguments[0].to_s
-bucket_name = input_arguments[1].to_s
-analysis_id = input_arguments[2].to_s
-datapoint_id = input_arguments[3].to_s
-aws_region = input_arguments[4].to_s
 
 #Set up s3.
 s3 = Aws::S3::Resource.new(region: aws_region)

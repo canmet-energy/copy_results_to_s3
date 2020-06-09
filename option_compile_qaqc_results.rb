@@ -35,8 +35,16 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # *******************************************************************************
 
+#Get arguments from the server finalization script.
+input_arguments = ARGV
+analysis_id = input_arguments[0].to_s
+bucket_name = input_arguments[1].to_s
+aws_s3_region = input_arguments[2].to_s
+proc_local = input_arguments[3].to_s
+aws_lambda_region = input_arguments[4].to_s
+gem_loc = input_arguments[5].to_s
+
 # Locate gems and make sure Ruby knows where they are so it can run this script.
-gem_loc = '/usr/local/lib/ruby/gems/2.2.0/gems/'
 gem_dirs = Dir.entries(gem_loc).select {|entry| File.directory? File.join(gem_loc,entry) and !(entry =='.' || entry == '..') }
 gem_dirs.sort.each do |gem_dir|
   lib_loc = ''
@@ -293,14 +301,6 @@ def put_data_s3(file_id:, bucket_name:, data:, region:)
   out_obj = bucket.object(file_id)
   out_obj.put(body: out_data)
 end
-
-#Get the analysis_id from the server finalization script.
-input_arguments = ARGV
-analysis_id = input_arguments[0].to_s
-bucket_name = input_arguments[1].to_s
-aws_s3_region = input_arguments[2].to_s
-proc_local = input_arguments[3].to_s
-aws_lambda_region = input_arguments[4].to_s
 
 #Get current time and date (to use in logs)
 time_obj = Time.new
