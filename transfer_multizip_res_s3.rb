@@ -36,7 +36,8 @@
 # *******************************************************************************
 
 # Locate gems and make sure Ruby knows where they are so it can run this script.
-gem_loc = '/usr/local/lib/ruby/gems/2.2.0/gems/'
+# gem_loc = '/usr/local/lib/ruby/gems/2.2.0/gems/'
+gem_loc = '/var/lib/gems/2.5.0/gems/'
 gem_dirs = Dir.entries(gem_loc).select {|entry| File.directory? File.join(gem_loc,entry) and !(entry =='.' || entry == '..') }
 gem_dirs.sort.each do |gem_dir|
   lib_loc = ''
